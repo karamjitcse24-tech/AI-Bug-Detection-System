@@ -1,0 +1,38 @@
+# Frontend
+Frontend/node_modules/
+Frontend/dist/
+Frontend/.vite/
+
+# Frontend environment files
+Frontend/.env
+Frontend/.env.local
+Frontend/.env.development.local
+Frontend/.env.production.local
+
+# Backend
+Backend/backend/target/
+
+# IntelliJ / Java
+Backend/backend/.idea/
+Backend/backend/*.iml
+Backend/backend/.env
+
+# General IDE files
+.idea/
+*.iml
+
+# Java generated files
+target/
+*.class
+
+# Logs
+*.log
+
+# Operating system files
+.DS_Store
+Thumbs.db
+
+# Environment / secret files
+.env
+.env.*
+!.env.example
