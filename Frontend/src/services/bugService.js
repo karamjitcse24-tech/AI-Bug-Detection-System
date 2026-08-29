@@ -17,12 +17,12 @@ export const updateBug = (id, bug) => {
 export const deleteBug = (id) => {
   return axios.delete(`${API_URL}/${id}`);
 };
-export const predictSeverity = async (description) => {
+
+// AI Bug Analysis
+export const analyzeBug = async (description) => {
   const response = await axios.post(
     "http://localhost:8080/api/analyze",
-    {
-      description: description,
-    }
+    { description }
   );
 
   return response.data;
