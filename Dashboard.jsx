@@ -6,6 +6,9 @@ function Dashboard() {
   const [bugs, setBugs] = useState([]);
   const [loading, setLoading] = useState(true);
 
+  // Selected bug for editing
+  const [selectedBug, setSelectedBug] = useState(null);
+
   useEffect(() => {
     loadBugs();
   }, []);
@@ -30,6 +33,22 @@ function Dashboard() {
     }
   };
 
+  // Select bug for editing
+  const handleEdit = (bug) => {
+    setSelectedBug(bug);
+
+    // Scroll to form
+    window.scrollTo({
+      top: 0,
+      behavior: "smooth",
+    });
+  };
+
+  // Clear selected bug after update/cancel
+  const clearSelection = () => {
+    setSelectedBug(null);
+  };
+
   // Delete a bug
   const handleDelete = async (id) => {
     const confirmDelete = window.confirm(
@@ -45,9 +64,13 @@ function Dashboard() {
 
       alert("Bug deleted successfully!");
 
+      // If deleted bug was selected for editing
+      if (selectedBug?.id === id) {
+        clearSelection();
+      }
+
       // Reload bug list
       loadBugs();
-
     } catch (error) {
       console.error("Error deleting bug:", error);
 
@@ -60,7 +83,11 @@ function Dashboard() {
       <h1>🤖 AI Bug Detection System</h1>
 
       {/* Bug Form */}
-      <BugForm onBugAdded={loadBugs} />
+      <BugForm
+        onBugAdded={loadBugs}
+        selectedBug={selectedBug}
+        clearSelection={clearSelection}
+      />
 
       <hr />
 
@@ -83,7 +110,7 @@ function Dashboard() {
               <th>Status</th>
               <th>AI Reason</th>
               <th>AI Recommendation</th>
-              <th>Action</th>
+              <th>Actions</th>
             </tr>
           </thead>
 
@@ -109,6 +136,13 @@ function Dashboard() {
                 </td>
 
                 <td>
+                  <button
+                    onClick={() => handleEdit(bug)}
+                    style={{ marginRight: "8px" }}
+                  >
+                    Edit
+                  </button>
+
                   <button
                     onClick={() => handleDelete(bug.id)}
                   >
