@@ -18,13 +18,12 @@ export const deleteBug = (id) => {
   return axios.delete(`${API_URL}/${id}`);
 };
 export const predictSeverity = async (description) => {
-  const response = await fetch("http://localhost:8080/bugs/predict-severity", {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify({ description }),
-  });
+  const response = await axios.post(
+    "http://localhost:8080/api/analyze",
+    {
+      description: description,
+    }
+  );
 
-  return response.json();
+  return response.data;
 };
