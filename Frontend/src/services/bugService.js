@@ -18,11 +18,13 @@ export const deleteBug = (id) => {
   return axios.delete(`${API_URL}/${id}`);
 };
 
-// AI Bug Analysis
-export const analyzeBug = async (description) => {
+// AI Analysis
+export const analyzeBugWithAI = async (description) => {
   const response = await axios.post(
     "http://localhost:8080/api/analyze",
-    { description }
+    {
+      description: description,
+    }
   );
 
   return response.data;
