@@ -19,10 +19,16 @@ export const deleteBug = (id) => {
 };
 
 export const predictSeverity = async (description) => {
-  const response = await axios.post(
-    "https://ai-bug-detection.up.railway.app/api/analyze",
-    { description }
+  const response = await fetch(
+    "https://ai-bug-detection.up.railway.app/bugs/predict-severity",
+    {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ description }),
+    }
   );
 
-  return response.data;
+  return response.json();
 };
