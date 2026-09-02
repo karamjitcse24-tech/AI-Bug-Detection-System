@@ -10,7 +10,10 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/bugs")
-@CrossOrigin(origins = "http://localhost:5173")   // <-- ADD THIS
+@CrossOrigin(origins = {
+    "http://localhost:5173",
+    "https://outstanding-embrace-production.up.railway.app"
+})   // <-- ADD THIS
 public class BugReportController {
 
     @Autowired
