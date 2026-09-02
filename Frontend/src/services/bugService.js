@@ -1,6 +1,6 @@
 import axios from "axios";
 
-const API_URL = "http://localhost:8080/bugs";
+const API_URL = "https://ai-bug-detection.up.railway.app/bugs";
 
 export const getAllBugs = () => {
   return axios.get(API_URL);
@@ -18,13 +18,10 @@ export const deleteBug = (id) => {
   return axios.delete(`${API_URL}/${id}`);
 };
 
-// AI Analysis
-export const analyzeBugWithAI = async (description) => {
+export const predictSeverity = async (description) => {
   const response = await axios.post(
-    "http://localhost:8080/api/analyze",
-    {
-      description: description,
-    }
+    "https://ai-bug-detection.up.railway.app/api/analyze",
+    { description }
   );
 
   return response.data;
