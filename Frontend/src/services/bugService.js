@@ -1,6 +1,6 @@
 import axios from "axios";
 
-const API_URL = "https://ai-bug-detection-system.up.railway.app";
+const API_URL = "https://ai-bug-detection.up.railway.app";
 export const getAllBugs = () => {
   return axios.get(`${API_URL}/bugs`);
 };
