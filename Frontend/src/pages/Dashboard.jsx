@@ -28,8 +28,15 @@ function Dashboard() {
 
   const loadBugs = async () => {
     try {
-      const response = await getAllBugs();
-      setBugs(response.data);
+const response = await getAllBugs();
+
+console.log("API Response:", response.data);
+
+setBugs(
+  Array.isArray(response.data)
+    ? response.data
+    : []
+);
     } catch (error) {
       console.error("Error loading bugs:", error);
     }
