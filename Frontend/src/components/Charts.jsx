@@ -19,6 +19,12 @@ function Charts({ bugs }) {
 
   const severityData = [
     {
+      name: "Critical",
+      value: bugs.filter(
+        (bug) => bug.severity === "Critical"
+      ).length,
+    },
+    {
       name: "High",
       value: bugs.filter(
         (bug) => bug.severity === "High"
@@ -48,6 +54,18 @@ function Charts({ bugs }) {
       ).length,
     },
     {
+      name: "In Progress",
+      value: bugs.filter(
+        (bug) => bug.status === "In Progress"
+      ).length,
+    },
+    {
+      name: "Resolved",
+      value: bugs.filter(
+        (bug) => bug.status === "Resolved"
+      ).length,
+    },
+    {
       name: "Closed",
       value: bugs.filter(
         (bug) => bug.status === "Closed"
@@ -55,15 +73,14 @@ function Charts({ bugs }) {
     },
   ];
 
-  // ================= COLORS =================
+  // ================= SEVERITY COLORS =================
 
   const SEVERITY_COLORS = [
-    "#e53935", // High
-    "#fb8c00", // Medium
-    "#43a047", // Low
+    "#8e24aa", // Critical - Purple
+    "#e53935", // High - Red
+    "#fb8c00", // Medium - Orange
+    "#43a047", // Low - Green
   ];
-
-  // ================= COMPONENT =================
 
   return (
     <Box
@@ -78,10 +95,7 @@ function Charts({ bugs }) {
         mb: 4,
       }}
     >
-
-      {/* ================================================= */}
-      {/* BUG SEVERITY CHART */}
-      {/* ================================================= */}
+      {/* ================= BUG SEVERITY CHART ================= */}
 
       <Paper
         elevation={4}
@@ -143,9 +157,7 @@ function Charts({ bugs }) {
                   (entry, index) => (
                     <Cell
                       key={`severity-${index}`}
-                      fill={
-                        SEVERITY_COLORS[index]
-                      }
+                      fill={SEVERITY_COLORS[index]}
                     />
                   )
                 )}
@@ -162,9 +174,7 @@ function Charts({ bugs }) {
         </Box>
       </Paper>
 
-      {/* ================================================= */}
-      {/* BUG STATUS CHART */}
-      {/* ================================================= */}
+      {/* ================= BUG STATUS CHART ================= */}
 
       <Paper
         elevation={4}
@@ -240,7 +250,7 @@ function Charts({ bugs }) {
                 name="Number of Bugs"
                 fill="#1976d2"
                 radius={[8, 8, 0, 0]}
-                barSize={70}
+                barSize={50}
               />
             </BarChart>
           </ResponsiveContainer>
