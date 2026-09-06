@@ -13,36 +13,41 @@ import {
 } from "../services/bugService";
 
 function Dashboard() {
+  // ================= STATE =================
+
   const [bugs, setBugs] = useState([]);
   const [selectedBug, setSelectedBug] = useState(null);
 
+  // Search and Filter States
   const [search, setSearch] = useState("");
   const [severity, setSeverity] = useState("");
   const [status, setStatus] = useState("");
+
+  // ================= LOAD BUGS =================
 
   useEffect(() => {
     loadBugs();
   }, []);
 
-  // ================= LOAD BUGS =================
-
   const loadBugs = async () => {
     try {
-const response = await getAllBugs();
+      const response = await getAllBugs();
 
-console.log("API Response:", response.data);
+      console.log("API Response:", response.data);
 
-setBugs(
-  Array.isArray(response.data)
-    ? response.data
-    : []
-);
+      setBugs(
+        Array.isArray(response.data)
+          ? response.data
+          : []
+      );
     } catch (error) {
       console.error("Error loading bugs:", error);
+
+      setBugs([]);
     }
   };
 
-  // ================= EDIT =================
+  // ================= EDIT BUG =================
 
   const handleEdit = (bug) => {
     setSelectedBug(bug);
@@ -54,7 +59,7 @@ setBugs(
     });
   };
 
-  // ================= DELETE =================
+  // ================= DELETE BUG =================
 
   const handleDelete = async (id) => {
     const confirmDelete = window.confirm(
@@ -69,28 +74,44 @@ setBugs(
       alert("Bug Deleted Successfully!");
 
       await loadBugs();
+
     } catch (error) {
       console.error("Delete Error:", error);
+
       alert("Delete Failed");
     }
   };
 
-  // ================= FILTER =================
+  // ================= FILTER BUGS =================
 
   const filteredBugs = bugs.filter((bug) => {
     const title = bug.title || "";
     const bugSeverity = bug.severity || "";
     const bugStatus = bug.status || "";
 
+    // Search by bug title
     const matchesSearch = title
       .toLowerCase()
       .includes(search.toLowerCase());
 
+    // Filter by Severity
+    // Supports:
+    // Low
+    // Medium
+    // High
+    // Critical
     const matchesSeverity =
-      severity === "" || bugSeverity === severity;
+      severity === "" ||
+      bugSeverity === severity;
 
+    // Filter by Status
+    // Supports:
+    // Open
+    // In Progress
+    // Resolved
     const matchesStatus =
-      status === "" || bugStatus === status;
+      status === "" ||
+      bugStatus === status;
 
     return (
       matchesSearch &&
@@ -107,6 +128,7 @@ setBugs(
     setStatus("");
   };
 
+  // Check whether any filter is currently applied
   const filtersApplied =
     search !== "" ||
     severity !== "" ||
@@ -129,12 +151,15 @@ setBugs(
           boxSizing: "border-box",
         }}
       >
+
         {/* ================= BUG FORM ================= */}
 
         <BugForm
           onBugAdded={loadBugs}
           selectedBug={selectedBug}
-          clearSelection={() => setSelectedBug(null)}
+          clearSelection={() =>
+            setSelectedBug(null)
+          }
         />
 
         {/* ================= DASHBOARD CARDS ================= */}
@@ -167,20 +192,25 @@ setBugs(
           <SearchFilter
             search={search}
             setSearch={setSearch}
+
             severity={severity}
             setSeverity={setSeverity}
+
             status={status}
             setStatus={setStatus}
           />
         </section>
 
-        {/* ================= BUG REPORTS HEADER ================= */}
+        {/* ================= BUG REPORTS ================= */}
 
         <section
           style={{
             marginTop: "30px",
           }}
         >
+
+          {/* ================= HEADER ================= */}
+
           <div
             style={{
               display: "flex",
@@ -191,6 +221,9 @@ setBugs(
               marginBottom: "15px",
             }}
           >
+
+            {/* TITLE */}
+
             <div>
               <h2
                 style={{
@@ -213,7 +246,7 @@ setBugs(
               </p>
             </div>
 
-            {/* FILTER RESULT COUNT */}
+            {/* ================= FILTER RESULT COUNT ================= */}
 
             <div
               style={{
@@ -223,6 +256,7 @@ setBugs(
             >
               Showing {filteredBugs.length} of {bugs.length} bugs
             </div>
+
           </div>
 
           {/* ================= ACTIVE FILTER MESSAGE ================= */}
@@ -241,9 +275,12 @@ setBugs(
                 fontSize: "14px",
               }}
             >
+
               <span>
                 Filters are currently applied.
               </span>
+
+              {/* CLEAR FILTER BUTTON */}
 
               <button
                 onClick={clearFilters}
@@ -257,18 +294,24 @@ setBugs(
               >
                 Clear Filters
               </button>
+
             </div>
           )}
 
           {/* ================= BUG TABLE ================= */}
 
           {filteredBugs.length > 0 ? (
+
             <BugTable
               bugs={filteredBugs}
               onEdit={handleEdit}
               onDelete={handleDelete}
             />
+
           ) : (
+
+            /* ================= NO BUGS FOUND ================= */
+
             <div
               style={{
                 padding: "50px 20px",
@@ -278,6 +321,7 @@ setBugs(
                 border: "1px solid #e0e0e0",
               }}
             >
+
               <div
                 style={{
                   fontSize: "45px",
@@ -303,9 +347,12 @@ setBugs(
               >
                 Try changing your search or filter options.
               </p>
+
             </div>
           )}
+
         </section>
+
       </main>
     </>
   );
