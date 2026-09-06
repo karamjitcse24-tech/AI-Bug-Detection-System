@@ -20,10 +20,14 @@ function SearchFilter({
   status,
   setStatus,
 }) {
+  // ================= CHECK ACTIVE FILTERS =================
+
   const filtersApplied =
     search !== "" ||
     severity !== "" ||
     status !== "";
+
+  // ================= CLEAR FILTERS =================
 
   const clearFilters = () => {
     setSearch("");
@@ -79,7 +83,7 @@ function SearchFilter({
           </Typography>
         </Box>
 
-        {/* CLEAR FILTERS */}
+        {/* ================= CLEAR FILTERS ================= */}
 
         {filtersApplied && (
           <Button
@@ -111,7 +115,7 @@ function SearchFilter({
           gap: 2,
         }}
       >
-        {/* SEARCH */}
+        {/* ================= SEARCH ================= */}
 
         <TextField
           fullWidth
@@ -130,7 +134,7 @@ function SearchFilter({
           }}
         />
 
-        {/* SEVERITY */}
+        {/* ================= SEVERITY ================= */}
 
         <TextField
           fullWidth
@@ -143,6 +147,10 @@ function SearchFilter({
         >
           <MenuItem value="">
             All Severities
+          </MenuItem>
+
+          <MenuItem value="Critical">
+            Critical
           </MenuItem>
 
           <MenuItem value="High">
@@ -158,7 +166,7 @@ function SearchFilter({
           </MenuItem>
         </TextField>
 
-        {/* STATUS */}
+        {/* ================= STATUS ================= */}
 
         <TextField
           fullWidth
@@ -179,6 +187,10 @@ function SearchFilter({
 
           <MenuItem value="Closed">
             Closed
+          </MenuItem>
+
+          <MenuItem value="Resolved">
+            Resolved
           </MenuItem>
         </TextField>
       </Box>
