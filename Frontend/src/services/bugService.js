@@ -1,6 +1,8 @@
 import axios from "axios";
 
 const API_URL = "https://ai-bug-detection.up.railway.app";
+
+// Bug APIs
 export const getAllBugs = () => {
   return axios.get(`${API_URL}/bugs`);
 };
@@ -17,10 +19,13 @@ export const deleteBug = (id) => {
   return axios.delete(`${API_URL}/bugs/${id}`);
 };
 
+// AI Bug Analysis
 export const analyzeBugWithAI = async (description) => {
   const response = await axios.post(
     `${API_URL}/api/analyze`,
-    { description }
+    {
+      description: description,
+    }
   );
 
   return response.data;
