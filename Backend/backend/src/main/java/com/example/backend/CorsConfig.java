@@ -18,7 +18,7 @@ public class CorsConfig {
 
         config.setAllowedOrigins(Arrays.asList(
                 "http://localhost:5173",
-                "https://ai-bug-detection-system.up.railway.app"
+                "https://ai-bug-detection-system.vercel.app"
         ));
 
         config.setAllowedMethods(Arrays.asList(
