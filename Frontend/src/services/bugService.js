@@ -1,32 +1,41 @@
+
 import axios from "axios";
 
-const API_URL = "https://ai-bug-detection-system-gm5h.onrender.com";
+const API_URL =
+  "https://ai-bug-detection-system-gm5h.onrender.com";
 
-// Bug APIs
-export const getAllBugs = () => {
-  return axios.get(`${API_URL}/bugs`);
-};
+const bugApi = axios.create({
+  baseURL: API_URL,
+});
 
-export const createBug = (bug) => {
-  return axios.post(`${API_URL}/bugs`, bug);
-};
+// Attach the JWT token to authenticated API requests.
+bugApi.interceptors.request.use(
+  (config) => {
+    const token = sessionStorage.getItem("token");
 
-export const updateBug = (id, bug) => {
-  return axios.put(`${API_URL}/bugs/${id}`, bug);
-};
-
-export const deleteBug = (id) => {
-  return axios.delete(`${API_URL}/bugs/${id}`);
-};
-
-// AI Bug Analysis
-export const analyzeBugWithAI = async (description) => {
-  const response = await axios.post(
-    `${API_URL}/api/analyze`,
-    {
-      description: description,
+    if (token) {
+      config.headers.Authorization = `Bearer ${token}`;
     }
-  );
+
+    return config;
+  },
+  (error) => Promise.reject(error)
+);
+
+export const getAllBugs = () => bugApi.get("/bugs");
+
+export const createBug = (bug) => bugApi.post("/bugs", bug);
+
+export const updateBug = (id, bug) =>
+  bugApi.put(`/bugs/${id}`, bug);
+
+export const deleteBug = (id) =>
+  bugApi.delete(`/bugs/${id}`);
+
+export const analyzeBugWithAI = async (description) => {
+  const response = await bugApi.post("/api/analyze", {
+    description,
+  });
 
   return response.data;
 };
