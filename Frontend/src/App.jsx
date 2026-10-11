@@ -2,10 +2,7 @@
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import Dashboard from "./pages/Dashboard";
 import Login from "./pages/Login";
-
-function Signup() {
-  return <div>Signup page is coming next.</div>;
-}
+import Signup from "./pages/Signup";
 
 function App() {
   return (
