@@ -5,6 +5,7 @@ import com.example.backend.dto.AuthResponse;
 import com.example.backend.dto.LoginRequest;
 import com.example.backend.dto.RegisterRequest;
 import com.example.backend.model.User;
+import com.example.backend.service.JwtService;
 import com.example.backend.service.UserService;
 
 import jakarta.validation.Valid;
@@ -18,9 +19,14 @@ import org.springframework.web.bind.annotation.*;
 public class AuthController {
 
     private final UserService userService;
+    private final JwtService jwtService;
 
-    public AuthController(UserService userService) {
+    public AuthController(
+            UserService userService,
+            JwtService jwtService) {
+
         this.userService = userService;
+        this.jwtService = jwtService;
     }
 
     @PostMapping("/register")
@@ -62,11 +68,14 @@ public class AuthController {
                     request.getPassword()
             );
 
+            String token = jwtService.generateToken(user.getEmail());
+
             AuthResponse response = new AuthResponse(
                     user.getId(),
                     user.getName(),
                     user.getEmail(),
-                    "Login successful."
+                    "Login successful.",
+                    token
             );
 
             return ResponseEntity.ok(response);
@@ -74,7 +83,8 @@ public class AuthController {
         } catch (IllegalArgumentException exception) {
             return ResponseEntity
                     .status(HttpStatus.UNAUTHORIZED)
-                    .body(new ErrorResponse(exception.getMessage()));
+                    .body(new ErrorResponse(
+                            "Invalid email or password."));
         }
     }
 
