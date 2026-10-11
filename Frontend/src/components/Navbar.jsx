@@ -71,7 +71,7 @@ function Navbar() {
               textOverflow: "ellipsis",
             }}
           >
-            AI Bug Detection Dashboard
+            AI Bug Management Dashboard
           </Typography>
 
           <Typography
