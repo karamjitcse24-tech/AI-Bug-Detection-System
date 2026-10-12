@@ -3,6 +3,7 @@ package com.example.backend;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.http.SessionCreationPolicy;
@@ -22,26 +23,22 @@ public class SecurityConfig {
     }
 
     @Bean
-    public SecurityFilterChain securityFilterChain(HttpSecurity http)
-            throws Exception {
+    public SecurityFilterChain securityFilterChain(
+            HttpSecurity http) throws Exception {
 
         http
             .cors(Customizer.withDefaults())
             .csrf(csrf -> csrf.disable())
-            .sessionManagement(session -> session
-                .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
+            .sessionManagement(session ->
+                session.sessionCreationPolicy(
+                    SessionCreationPolicy.STATELESS
+                )
             )
             .authorizeHttpRequests(auth -> auth
-                .requestMatchers(
-                    org.springframework.http.HttpMethod.OPTIONS, "/**"
-                ).permitAll()
+                .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
                 .requestMatchers("/auth/**").permitAll()
-
-                // Temporary: preserve existing frontend functionality
-                // until it sends JWT tokens with API requests.
-                .requestMatchers("/bugs/**").permitAll()
-                .requestMatchers("/api/analyze").permitAll()
-
+                .requestMatchers("/bugs/**").authenticated()
+                .requestMatchers("/api/analyze").authenticated()
                 .anyRequest().permitAll()
             )
             .addFilterBefore(
