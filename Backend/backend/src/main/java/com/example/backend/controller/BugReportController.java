@@ -1,55 +1,70 @@
+
 package com.example.backend.controller;
 
 import com.example.backend.model.BugReport;
 import com.example.backend.service.BugReportService;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.*;
+
 import jakarta.validation.Valid;
+
+import org.springframework.http.HttpStatus;
+import org.springframework.security.core.Authentication;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
 @RestController
 @RequestMapping("/bugs")
-@CrossOrigin(
-    origins = {
-        "http://localhost:5173",
-        "https://outstanding-embrace-production.up.railway.app"
-    },
-    methods = {
-        RequestMethod.GET,
-        RequestMethod.POST,
-        RequestMethod.PUT,
-        RequestMethod.DELETE,
-        RequestMethod.OPTIONS
-    },
-    allowedHeaders = "*"
-)public class BugReportController {
+public class BugReportController {
 
-    @Autowired
-    private BugReportService bugReportService;
+    private final BugReportService bugReportService;
+
+    public BugReportController(BugReportService bugReportService) {
+        this.bugReportService = bugReportService;
+    }
 
     @PostMapping
-    public BugReport createBug(@Valid @RequestBody BugReport bugReport) {
-        return bugReportService.saveBug(bugReport);
+    @ResponseStatus(HttpStatus.CREATED)
+    public BugReport createBug(
+            @Valid @RequestBody BugReport bugReport,
+            Authentication authentication) {
+
+        return bugReportService.saveBug(
+                bugReport,
+                authentication.getName()
+        );
     }
 
     @GetMapping
-    public List<BugReport> getAllBugs() {
-        return bugReportService.getAllBugs();
+    public List<BugReport> getAllBugs(
+            Authentication authentication) {
+
+        return bugReportService.getAllBugs(
+                authentication.getName()
+        );
     }
 
     @PutMapping("/{id}")
     public BugReport updateBug(
             @PathVariable Long id,
-            @RequestBody BugReport bugReport) {
+            @Valid @RequestBody BugReport bugReport,
+            Authentication authentication) {
 
-        return bugReportService.updateBug(id, bugReport);
+        return bugReportService.updateBug(
+                id,
+                bugReport,
+                authentication.getName()
+        );
     }
 
     @DeleteMapping("/{id}")
-    public String deleteBug(@PathVariable Long id) {
+    public String deleteBug(
+            @PathVariable Long id,
+            Authentication authentication) {
 
-        bugReportService.deleteBug(id);
+        bugReportService.deleteBug(
+                id,
+                authentication.getName()
+        );
 
         return "Bug deleted successfully!";
     }
