@@ -1,5 +1,7 @@
+
 package com.example.backend.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotBlank;
 
@@ -34,7 +36,13 @@ public class BugReport {
 
     private LocalDateTime updatedAt;
 
-    // Default constructor
+    // Owner of this bug report
+    // Nullable initially to preserve existing database records.
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "user_id")
+    @JsonIgnore
+    private User owner;
+
     public BugReport() {
     }
 
@@ -119,14 +127,22 @@ public class BugReport {
         this.updatedAt = updatedAt;
     }
 
-    // Before inserting new bug
-    @PrePersist
-    public void onCreate() {
-        createdAt = LocalDateTime.now();
-        updatedAt = LocalDateTime.now();
+    // Owner
+    public User getOwner() {
+        return owner;
     }
 
-    // Before updating bug
+    public void setOwner(User owner) {
+        this.owner = owner;
+    }
+
+    @PrePersist
+    public void onCreate() {
+        LocalDateTime now = LocalDateTime.now();
+        createdAt = now;
+        updatedAt = now;
+    }
+
     @PreUpdate
     public void onUpdate() {
         updatedAt = LocalDateTime.now();
