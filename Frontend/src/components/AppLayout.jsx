@@ -104,7 +104,7 @@ export default function AppLayout({ children }) {
                 color="text.secondary"
                 sx={{ whiteSpace: "nowrap" }}
               >
-                BugNova
+                BugManager
               </Typography>
 
               <Typography
