@@ -12,13 +12,17 @@ function Dashboard() {
     loadBugs();
   }, []);
 
+  // Load bug reports from the backend.
   const loadBugs = async () => {
     try {
       setLoading(true);
+
       const response = await getAllBugs();
+
       setBugs(Array.isArray(response.data) ? response.data : []);
     } catch (error) {
       console.error("Error loading bugs:", error);
+
       alert(
         "Cannot connect to backend!\n\n" +
           "Please check that the backend is running and accessible."
@@ -28,15 +32,22 @@ function Dashboard() {
     }
   };
 
+  // Select a bug for editing.
   const handleEdit = (bug) => {
     setSelectedBug(bug);
-    window.scrollTo({ top: 0, behavior: "smooth" });
+
+    window.scrollTo({
+      top: 0,
+      behavior: "smooth",
+    });
   };
 
+  // Clear the selected bug.
   const clearSelection = () => {
     setSelectedBug(null);
   };
 
+  // Delete a bug report.
   const handleDelete = async (id) => {
     const confirmDelete = window.confirm(
       "Are you sure you want to delete this bug?"
@@ -52,6 +63,7 @@ function Dashboard() {
       }
 
       await loadBugs();
+
       alert("Bug deleted successfully!");
     } catch (error) {
       console.error("Error deleting bug:", error);
@@ -59,6 +71,7 @@ function Dashboard() {
     }
   };
 
+  // Theme-aware severity badges.
   const getSeverityStyle = (severity) => {
     const value = String(severity || "").toLowerCase();
 
@@ -82,6 +95,7 @@ function Dashboard() {
     };
   };
 
+  // Theme-aware status badges.
   const getStatusStyle = (status) => {
     const value = String(status || "").toLowerCase();
 
@@ -106,12 +120,14 @@ function Dashboard() {
   };
 
   const cardStyle = {
+    minWidth: 0,
     background: "var(--surface)",
     border: "1px solid var(--border)",
     borderRadius: "16px",
-    padding: "22px",
+    padding: "clamp(16px, 2vw, 26px)",
     boxShadow: "var(--shadow)",
     color: "var(--text)",
+    transition: "background-color 0.25s ease, color 0.25s ease",
   };
 
   const buttonStyle = {
@@ -121,23 +137,71 @@ function Dashboard() {
     cursor: "pointer",
     fontWeight: 600,
     fontSize: "13px",
+    whiteSpace: "nowrap",
   };
+
+  const openBugs = bugs.filter((bug) => {
+    const status = String(bug.status || "").toLowerCase();
+
+    return !status.includes("resolved") && !status.includes("closed");
+  }).length;
+
+  const closedBugs = bugs.filter((bug) => {
+    const status = String(bug.status || "").toLowerCase();
+
+    return status.includes("resolved") || status.includes("closed");
+  }).length;
+
+  const highSeverityBugs = bugs.filter((bug) => {
+    const severity = String(bug.severity || "").toLowerCase();
+
+    return severity.includes("high") || severity.includes("critical");
+  }).length;
+
+  const summaryCards = [
+    {
+      label: "Total Bugs",
+      value: bugs.length,
+      color: "#1976d2",
+      icon: "🐞",
+    },
+    {
+      label: "Open Bugs",
+      value: openBugs,
+      color: "#ed7900",
+      icon: "!",
+    },
+    {
+      label: "Closed Bugs",
+      value: closedBugs,
+      color: "#27833a",
+      icon: "✓",
+    },
+    {
+      label: "High Severity",
+      value: highSeverityBugs,
+      color: "#d72f32",
+      icon: "⚠",
+    },
+  ];
 
   return (
     <main
       style={{
         width: "100%",
-        maxWidth: "1440px",
+        maxWidth: "100%",
+        minWidth: 0,
+        minHeight: "100vh",
+        margin: 0,
+        padding: "clamp(16px, 2.5vw, 36px)",
         boxSizing: "border-box",
-        margin: "0 auto",
-        padding: "24px",
         textAlign: "left",
         color: "var(--text)",
         background: "var(--bg)",
-        minHeight: "100vh",
         transition: "background-color 0.25s ease, color 0.25s ease",
       }}
     >
+      {/* Page heading */}
       <header
         style={{
           display: "flex",
@@ -145,10 +209,10 @@ function Dashboard() {
           justifyContent: "space-between",
           alignItems: "center",
           gap: "16px",
-          marginBottom: "28px",
+          marginBottom: "24px",
         }}
       >
-        <div>
+        <div style={{ minWidth: 0 }}>
           <p
             style={{
               color: "var(--accent)",
@@ -163,22 +227,31 @@ function Dashboard() {
 
           <h1
             style={{
-              fontSize: "clamp(26px, 4vw, 36px)",
+              fontSize: "clamp(25px, 3vw, 38px)",
               fontWeight: 750,
               letterSpacing: "-1px",
+              lineHeight: 1.2,
               margin: 0,
               color: "var(--text-h)",
+              overflowWrap: "anywhere",
             }}
           >
             AI Bug Detection System
           </h1>
 
-          <p style={{ marginTop: "8px", fontSize: "14px" }}>
+          <p
+            style={{
+              marginTop: "8px",
+              fontSize: "14px",
+              color: "var(--text)",
+            }}
+          >
             Manage, review, and track your bug reports.
           </p>
         </div>
 
         <button
+          type="button"
           onClick={loadBugs}
           disabled={loading}
           style={{
@@ -186,13 +259,15 @@ function Dashboard() {
             background: "var(--accent)",
             color: "#ffffff",
             borderColor: "var(--accent)",
-            padding: "11px 17px",
+            padding: "11px 18px",
+            opacity: loading ? 0.7 : 1,
           }}
         >
           {loading ? "Refreshing..." : "↻ Refresh"}
         </button>
       </header>
 
+      {/* Bug form */}
       <section
         style={{
           ...cardStyle,
@@ -202,8 +277,8 @@ function Dashboard() {
         <h2
           style={{
             color: "var(--text-h)",
-            fontSize: "20px",
-            marginBottom: "18px",
+            fontSize: "clamp(19px, 2vw, 23px)",
+            margin: "0 0 16px",
           }}
         >
           {selectedBug ? "Edit Bug Report" : "Create Bug Report"}
@@ -216,54 +291,77 @@ function Dashboard() {
         />
       </section>
 
+      {/* Summary cards */}
       <section
+        aria-label="Bug summary"
         style={{
           display: "grid",
-          gridTemplateColumns: "repeat(auto-fit, minmax(210px, 1fr))",
+          gridTemplateColumns:
+            "repeat(auto-fit, minmax(min(100%, 220px), 1fr))",
           gap: "18px",
           marginBottom: "24px",
+          width: "100%",
         }}
       >
-        <div style={cardStyle}>
-          <p style={{ fontSize: "13px", fontWeight: 600 }}>
-            TOTAL BUG REPORTS
-          </p>
-          <p
+        {summaryCards.map((item) => (
+          <div
+            key={item.label}
             style={{
-              fontSize: "36px",
-              fontWeight: 750,
-              color: "var(--text-h)",
-              marginTop: "10px",
+              minWidth: 0,
+              minHeight: "142px",
+              padding: "22px 16px",
+              borderRadius: "14px",
+              background: item.color,
+              color: "#ffffff",
+              boxShadow: "var(--shadow)",
+              display: "flex",
+              flexDirection: "column",
+              alignItems: "center",
+              justifyContent: "center",
+              textAlign: "center",
+              gap: "8px",
             }}
           >
-            {bugs.length}
-          </p>
-        </div>
+            <span
+              aria-hidden="true"
+              style={{
+                fontSize: item.label === "Open Bugs" ? "30px" : "28px",
+                fontWeight: 800,
+                lineHeight: 1,
+              }}
+            >
+              {item.icon}
+            </span>
 
-        <div style={cardStyle}>
-          <p style={{ fontSize: "13px", fontWeight: 600 }}>
-            OPEN / UNRESOLVED
-          </p>
-          <p
-            style={{
-              fontSize: "36px",
-              fontWeight: 750,
-              color: "var(--accent)",
-              marginTop: "10px",
-            }}
-          >
-            {
-              bugs.filter((bug) => {
-                const status = String(bug.status || "").toLowerCase();
-                return !status.includes("resolved") &&
-                  !status.includes("closed");
-              }).length
-            }
-          </p>
-        </div>
+            <span
+              style={{
+                fontSize: "14px",
+                fontWeight: 700,
+              }}
+            >
+              {item.label}
+            </span>
+
+            <span
+              style={{
+                fontSize: "32px",
+                fontWeight: 800,
+                lineHeight: 1.1,
+              }}
+            >
+              {item.value}
+            </span>
+          </div>
+        ))}
       </section>
 
-      <section style={cardStyle}>
+      {/* Bug reports table */}
+      <section
+        style={{
+          ...cardStyle,
+          width: "100%",
+        }}
+      >
         <div
           style={{
             display: "flex",
@@ -278,13 +376,14 @@ function Dashboard() {
             <h2
               style={{
                 color: "var(--text-h)",
-                fontSize: "21px",
-                marginBottom: "6px",
+                fontSize: "clamp(19px, 2vw, 23px)",
+                margin: "0 0 6px",
               }}
             >
               Bug Reports
             </h2>
-            <p style={{ fontSize: "13px" }}>
+
+            <p style={{ fontSize: "13px", color: "var(--text)" }}>
               Review bug details and AI recommendations.
             </p>
           </div>
@@ -297,6 +396,7 @@ function Dashboard() {
               padding: "7px 12px",
               fontWeight: 700,
               fontSize: "12px",
+              whiteSpace: "nowrap",
             }}
           >
             {bugs.length} reports
@@ -312,11 +412,19 @@ function Dashboard() {
               padding: "42px 16px",
               background: "var(--surface-secondary)",
               borderRadius: "12px",
+              color: "var(--text)",
             }}
           >
-            <p style={{ fontSize: "17px", fontWeight: 700 }}>
+            <p
+              style={{
+                fontSize: "17px",
+                fontWeight: 700,
+                color: "var(--text-h)",
+              }}
+            >
               No bug reports found
             </p>
+
             <p style={{ fontSize: "13px", marginTop: "8px" }}>
               Create a bug report using the form above.
             </p>
@@ -325,6 +433,8 @@ function Dashboard() {
           <div
             style={{
               width: "100%",
+              maxWidth: "100%",
+              minWidth: 0,
               overflowX: "auto",
               border: "1px solid var(--border)",
               borderRadius: "10px",
@@ -333,7 +443,7 @@ function Dashboard() {
             <table
               style={{
                 width: "100%",
-                minWidth: "1050px",
+                minWidth: "900px",
                 borderCollapse: "collapse",
                 fontSize: "13px",
                 color: "var(--text)",
@@ -354,6 +464,7 @@ function Dashboard() {
                   ].map((heading) => (
                     <th
                       key={heading}
+                      scope="col"
                       style={{
                         padding: "14px 12px",
                         textAlign: "left",
@@ -373,6 +484,7 @@ function Dashboard() {
                 {bugs.map((bug) => (
                   <tr key={bug.id}>
                     <td style={cellStyle}>{bug.id}</td>
+
                     <td
                       style={{
                         ...cellStyle,
@@ -382,17 +494,19 @@ function Dashboard() {
                     >
                       {bug.title || "Untitled"}
                     </td>
+
                     <td
                       style={{
                         ...cellStyle,
-                        minWidth: "180px",
-                        maxWidth: "260px",
+                        minWidth: "160px",
+                        maxWidth: "280px",
                         whiteSpace: "normal",
                         overflowWrap: "anywhere",
                       }}
                     >
                       {bug.description || "—"}
                     </td>
+
                     <td style={cellStyle}>
                       <span
                         style={{
@@ -407,6 +521,7 @@ function Dashboard() {
                         {bug.severity || "Not set"}
                       </span>
                     </td>
+
                     <td style={cellStyle}>
                       <span
                         style={{
@@ -421,37 +536,42 @@ function Dashboard() {
                         {bug.status || "Open"}
                       </span>
                     </td>
+
                     <td
                       style={{
                         ...cellStyle,
-                        minWidth: "180px",
-                        maxWidth: "260px",
+                        minWidth: "160px",
+                        maxWidth: "280px",
                         whiteSpace: "normal",
                         overflowWrap: "anywhere",
                       }}
                     >
                       {bug.aiReason || "Not analyzed yet"}
                     </td>
+
                     <td
                       style={{
                         ...cellStyle,
-                        minWidth: "180px",
-                        maxWidth: "260px",
+                        minWidth: "160px",
+                        maxWidth: "280px",
                         whiteSpace: "normal",
                         overflowWrap: "anywhere",
                       }}
                     >
                       {bug.aiRecommendation || "Not analyzed yet"}
                     </td>
+
                     <td style={cellStyle}>
                       <div
                         style={{
                           display: "flex",
+                          flexWrap: "wrap",
                           gap: "8px",
                           alignItems: "center",
                         }}
                       >
                         <button
+                          type="button"
                           onClick={() => handleEdit(bug)}
                           style={{
                             ...buttonStyle,
@@ -463,11 +583,14 @@ function Dashboard() {
                         </button>
 
                         <button
+                          type="button"
                           onClick={() => handleDelete(bug.id)}
                           style={{
                             ...buttonStyle,
-                            background: "var(--danger-bg, #fee2e2)",
-                            color: "var(--danger-text, #dc2626)",
+                            background:
+                              "var(--danger-bg, #fee2e2)",
+                            color:
+                              "var(--danger-text, #dc2626)",
                           }}
                         >
                           Delete
