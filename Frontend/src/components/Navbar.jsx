@@ -1,3 +1,6 @@
+
+import { useState } from "react";
+
 import AppBar from "@mui/material/AppBar";
 import Toolbar from "@mui/material/Toolbar";
 import Typography from "@mui/material/Typography";
@@ -6,6 +9,24 @@ import Avatar from "@mui/material/Avatar";
 import BugReportIcon from "@mui/icons-material/BugReport";
 
 function Navbar() {
+  // Read the logged-in user's details from the existing session.
+  const [user] = useState(() => {
+    try {
+      return JSON.parse(
+        sessionStorage.getItem("user") || "null"
+      );
+    } catch {
+      return null;
+    }
+  });
+
+  const displayName =
+    user?.name?.trim() ||
+    user?.email?.split("@")[0] ||
+    "Developer";
+
+  const userInitial = displayName.charAt(0).toUpperCase();
+
   return (
     <AppBar
       position="static"
@@ -39,6 +60,7 @@ function Navbar() {
             borderRadius: "50%",
             backgroundColor: "rgba(255,255,255,0.15)",
             mr: 1.5,
+            flexShrink: 0,
           }}
         >
           <BugReportIcon
@@ -89,13 +111,15 @@ function Navbar() {
           </Typography>
         </Box>
 
-        {/* ================= DEVELOPER PROFILE ================= */}
+        {/* ================= USER PROFILE ================= */}
 
         <Box
           sx={{
             display: "flex",
             alignItems: "center",
             gap: 1.2,
+            ml: 1,
+            flexShrink: 0,
           }}
         >
           <Box
@@ -105,6 +129,10 @@ function Navbar() {
                 xs: "none",
                 sm: "block",
               },
+              maxWidth: {
+                sm: 150,
+                md: 220,
+              },
             }}
           >
             <Typography
@@ -112,18 +140,24 @@ function Navbar() {
                 fontSize: "12px",
                 fontWeight: 600,
                 lineHeight: 1.2,
+                overflow: "hidden",
+                textOverflow: "ellipsis",
+                whiteSpace: "nowrap",
               }}
             >
-              Welcome, Developer
+              Welcome, {displayName}
             </Typography>
 
             <Typography
               sx={{
                 fontSize: "10px",
                 opacity: 0.8,
+                overflow: "hidden",
+                textOverflow: "ellipsis",
+                whiteSpace: "nowrap",
               }}
             >
-              Project Admin
+              {user?.email || "Logged-in user"}
             </Typography>
           </Box>
 
@@ -147,7 +181,7 @@ function Navbar() {
               boxShadow: 2,
             }}
           >
-            D
+            {userInitial}
           </Avatar>
         </Box>
       </Toolbar>
