@@ -1,4 +1,6 @@
+
 import { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 
 import Navbar from "../components/Navbar";
 import BugForm from "../components/BugForm";
@@ -13,15 +15,31 @@ import {
 } from "../services/bugService";
 
 function Dashboard() {
+  const navigate = useNavigate();
+
   // ================= STATE =================
 
   const [bugs, setBugs] = useState([]);
   const [selectedBug, setSelectedBug] = useState(null);
 
-  // Search and Filter States
   const [search, setSearch] = useState("");
   const [severity, setSeverity] = useState("");
   const [status, setStatus] = useState("");
+
+  // ================= LOGOUT =================
+
+  const handleLogout = () => {
+    const confirmLogout = window.confirm(
+      "Are you sure you want to log out?"
+    );
+
+    if (!confirmLogout) return;
+
+    sessionStorage.removeItem("token");
+    sessionStorage.removeItem("user");
+
+    navigate("/login", { replace: true });
+  };
 
   // ================= LOAD BUGS =================
 
@@ -52,7 +70,6 @@ function Dashboard() {
   const handleEdit = (bug) => {
     setSelectedBug(bug);
 
-    // Scroll smoothly to Bug Form
     window.scrollTo({
       top: 0,
       behavior: "smooth",
@@ -74,7 +91,6 @@ function Dashboard() {
       alert("Bug Deleted Successfully!");
 
       await loadBugs();
-
     } catch (error) {
       console.error("Delete Error:", error);
 
@@ -89,26 +105,14 @@ function Dashboard() {
     const bugSeverity = bug.severity || "";
     const bugStatus = bug.status || "";
 
-    // Search by bug title
     const matchesSearch = title
       .toLowerCase()
       .includes(search.toLowerCase());
 
-    // Filter by Severity
-    // Supports:
-    // Low
-    // Medium
-    // High
-    // Critical
     const matchesSeverity =
       severity === "" ||
       bugSeverity === severity;
 
-    // Filter by Status
-    // Supports:
-    // Open
-    // In Progress
-    // Resolved
     const matchesStatus =
       status === "" ||
       bugStatus === status;
@@ -128,11 +132,12 @@ function Dashboard() {
     setStatus("");
   };
 
-  // Check whether any filter is currently applied
   const filtersApplied =
     search !== "" ||
     severity !== "" ||
     status !== "";
+
+  // ================= DASHBOARD =================
 
   return (
     <>
@@ -151,6 +156,40 @@ function Dashboard() {
           boxSizing: "border-box",
         }}
       >
+        {/* ================= DASHBOARD HEADER ================= */}
+
+        <div
+          style={{
+            display: "flex",
+            justifyContent: "flex-end",
+            alignItems: "center",
+            marginBottom: "15px",
+          }}
+        >
+          <button
+            type="button"
+            onClick={handleLogout}
+            style={{
+              padding: "10px 18px",
+              background: "#dc2626",
+              color: "#ffffff",
+              border: "none",
+              borderRadius: "8px",
+              fontSize: "14px",
+              fontWeight: "600",
+              cursor: "pointer",
+              transition: "background 0.2s ease",
+            }}
+            onMouseOver={(event) => {
+              event.currentTarget.style.background = "#b91c1c";
+            }}
+            onMouseOut={(event) => {
+              event.currentTarget.style.background = "#dc2626";
+            }}
+          >
+            Logout
+          </button>
+        </div>
 
         {/* ================= BUG FORM ================= */}
 
@@ -192,10 +231,8 @@ function Dashboard() {
           <SearchFilter
             search={search}
             setSearch={setSearch}
-
             severity={severity}
             setSeverity={setSeverity}
-
             status={status}
             setStatus={setStatus}
           />
@@ -208,7 +245,6 @@ function Dashboard() {
             marginTop: "30px",
           }}
         >
-
           {/* ================= HEADER ================= */}
 
           <div
@@ -221,9 +257,6 @@ function Dashboard() {
               marginBottom: "15px",
             }}
           >
-
-            {/* TITLE */}
-
             <div>
               <h2
                 style={{
@@ -256,7 +289,6 @@ function Dashboard() {
             >
               Showing {filteredBugs.length} of {bugs.length} bugs
             </div>
-
           </div>
 
           {/* ================= ACTIVE FILTER MESSAGE ================= */}
@@ -275,14 +307,12 @@ function Dashboard() {
                 fontSize: "14px",
               }}
             >
-
               <span>
                 Filters are currently applied.
               </span>
 
-              {/* CLEAR FILTER BUTTON */}
-
               <button
+                type="button"
                 onClick={clearFilters}
                 style={{
                   border: "none",
@@ -294,24 +324,18 @@ function Dashboard() {
               >
                 Clear Filters
               </button>
-
             </div>
           )}
 
           {/* ================= BUG TABLE ================= */}
 
           {filteredBugs.length > 0 ? (
-
             <BugTable
               bugs={filteredBugs}
               onEdit={handleEdit}
               onDelete={handleDelete}
             />
-
           ) : (
-
-            /* ================= NO BUGS FOUND ================= */
-
             <div
               style={{
                 padding: "50px 20px",
@@ -321,7 +345,6 @@ function Dashboard() {
                 border: "1px solid #e0e0e0",
               }}
             >
-
               <div
                 style={{
                   fontSize: "45px",
@@ -347,12 +370,9 @@ function Dashboard() {
               >
                 Try changing your search or filter options.
               </p>
-
             </div>
           )}
-
         </section>
-
       </main>
     </>
   );
