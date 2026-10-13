@@ -1,5 +1,5 @@
-﻿
-import { useState } from "react";
+
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 
 import AppBar from "@mui/material/AppBar";
@@ -22,6 +22,10 @@ import PersonOutlineIcon from "@mui/icons-material/Person";
 import SettingsOutlinedIcon from "@mui/icons-material/SettingsOutlined";
 import LogoutIcon from "@mui/icons-material/Logout";
 import CloseIcon from "@mui/icons-material/Close";
+import Switch from "@mui/material/Switch";
+import FormControlLabel from "@mui/material/FormControlLabel";
+import DarkModeOutlinedIcon from "@mui/icons-material/DarkModeOutlined";
+import LightModeOutlinedIcon from "@mui/icons-material/LightModeOutlined";
 
 function Navbar() {
   const navigate = useNavigate();
@@ -42,6 +46,24 @@ function Navbar() {
 
   const [anchorEl, setAnchorEl] = useState(null);
   const [dialog, setDialog] = useState("");
+
+  // ================= THEME STATE =================
+
+  const [theme, setTheme] = useState(
+    () => localStorage.getItem("dashboard-theme") || "light"
+  );
+
+  useEffect(() => {
+    document.documentElement.dataset.theme = theme;
+    document.documentElement.style.colorScheme = theme;
+  }, [theme]);
+
+  const handleThemeChange = (event) => {
+    const nextTheme = event.target.checked ? "dark" : "light";
+
+    setTheme(nextTheme);
+    localStorage.setItem("dashboard-theme", nextTheme);
+  };
 
   const menuOpen = Boolean(anchorEl);
 
@@ -335,10 +357,7 @@ function Navbar() {
           sx={{ color: "error.main" }}
         >
           <ListItemIcon>
-            <LogoutIcon
-              fontSize="small"
-              color="error"
-            />
+            <LogoutIcon fontSize="small" color="error" />
           </ListItemIcon>
           Logout
         </MenuItem>
@@ -399,7 +418,10 @@ function Navbar() {
             <Typography
               variant="body2"
               color="text.secondary"
-              sx={{ overflowWrap: "anywhere", textAlign: "center" }}
+              sx={{
+                overflowWrap: "anywhere",
+                textAlign: "center",
+              }}
             >
               {user?.email || "No email available"}
             </Typography>
@@ -454,6 +476,8 @@ function Navbar() {
         </DialogTitle>
 
         <DialogContent dividers>
+          {/* ACCOUNT */}
+
           <Typography fontWeight={700} gutterBottom>
             Account
           </Typography>
@@ -462,16 +486,54 @@ function Navbar() {
             You are signed in as {displayName}.
           </Typography>
 
-          <Divider sx={{ my: 2 }} />
-
-          <Typography fontWeight={700} gutterBottom>
-            Dashboard
+          <Typography
+            variant="body2"
+            color="text.secondary"
+            sx={{ overflowWrap: "anywhere", mt: 0.5 }}
+          >
+            {user?.email || "No email available"}
           </Typography>
 
+          <Divider sx={{ my: 2 }} />
+
+          {/* APPEARANCE */}
+
+          <Typography fontWeight={700} gutterBottom>
+            Appearance
+          </Typography>
+
+          <FormControlLabel
+            control={
+              <Switch
+                checked={theme === "dark"}
+                onChange={handleThemeChange}
+                color="primary"
+                inputProps={{
+                  "aria-label": "Toggle dark mode",
+                }}
+              />
+            }
+            label={
+              <Box
+                sx={{
+                  display: "flex",
+                  alignItems: "center",
+                  gap: 1,
+                }}
+              >
+                {theme === "dark" ? (
+                  <DarkModeOutlinedIcon fontSize="small" />
+                ) : (
+                  <LightModeOutlinedIcon fontSize="small" />
+                )}
+
+                {theme === "dark" ? "Dark mode" : "Light mode"}
+              </Box>
+            }
+          />
+
           <Typography variant="body2" color="text.secondary">
-            Your dashboard currently uses its existing layout and
-            preferences. No database or account settings are changed
-            by opening this panel.
+            Your theme preference is saved in this browser.
           </Typography>
         </DialogContent>
 
@@ -486,4 +548,3 @@ function Navbar() {
 }
 
 export default Navbar;
-
