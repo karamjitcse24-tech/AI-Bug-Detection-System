@@ -2,11 +2,13 @@
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 
 import Dashboard from "./pages/Dashboard";
+import Bugs from "./pages/Bugs";
 import Login from "./pages/Login";
 import Signup from "./pages/Signup";
+
 import AppLayout from "./components/AppLayout";
 
-// Protect all application pages.
+// Protect application pages using the existing JWT token.
 function ProtectedRoute({ children }) {
   const token = sessionStorage.getItem("token");
 
@@ -17,27 +19,35 @@ function ProtectedRoute({ children }) {
   return <AppLayout>{children}</AppLayout>;
 }
 
-// Temporary placeholder until each real page is built.
+// Temporary page until the full section is implemented.
 function ComingSoon({ title, description }) {
   return (
-    <div
+    <main
       style={{
-        padding: "32px",
         minHeight: "70vh",
-        color: "var(--text-h, #f5f5f5)",
-        background: "var(--bg, #111216)",
+        padding: "32px",
         boxSizing: "border-box",
+        background: "var(--bg, #111216)",
+        color: "var(--text-h, #f5f5f5)",
       }}
     >
       <p style={{ color: "#35c6d2", fontWeight: 700 }}>
-        AI BUG MANAGEMENT SYSTEM
+        BUGMANAGER
       </p>
+
       <h1>{title}</h1>
-      <p style={{ color: "var(--text, #a0a0a0)", lineHeight: 1.7 }}>
+
+      <p
+        style={{
+          color: "var(--text, #a0a0a0)",
+          lineHeight: 1.7,
+        }}
+      >
         {description}
       </p>
-      <p>This section will be developed in the next step.</p>
-    </div>
+
+      <p>This section will be developed in a later step.</p>
+    </main>
   );
 }
 
@@ -55,7 +65,7 @@ function App() {
         <Route path="/login" element={<Login />} />
         <Route path="/signup" element={<Signup />} />
 
-        {/* Protected application sections */}
+        {/* Dashboard */}
         <Route
           path="/dashboard"
           element={
@@ -65,18 +75,17 @@ function App() {
           }
         />
 
+        {/* Bug management */}
         <Route
           path="/bugs"
           element={
             <ProtectedRoute>
-              <ComingSoon
-                title="Bug Management"
-                description="Search, filter, create, edit, delete, and analyze bug reports."
-              />
+              <Bugs />
             </ProtectedRoute>
           }
         />
 
+        {/* Reports */}
         <Route
           path="/reports"
           element={
@@ -89,6 +98,7 @@ function App() {
           }
         />
 
+        {/* Tasks */}
         <Route
           path="/tasks"
           element={
@@ -101,6 +111,7 @@ function App() {
           }
         />
 
+        {/* Team project */}
         <Route
           path="/team"
           element={
@@ -113,6 +124,7 @@ function App() {
           }
         />
 
+        {/* Profile */}
         <Route
           path="/profile"
           element={
