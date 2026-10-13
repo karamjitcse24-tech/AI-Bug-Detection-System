@@ -1,5 +1,7 @@
 
+import { useEffect, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
+
 import {
   AppBar,
   Avatar,
@@ -32,46 +34,58 @@ const pageNames = {
 export default function AppLayout({ children }) {
   const location = useLocation();
   const navigate = useNavigate();
+
   const pageTitle = pageNames[location.pathname] || "Dashboard";
 
-  const user = (() => {
+  const [user] = useState(() => {
     try {
       return JSON.parse(sessionStorage.getItem("user") || "null");
     } catch {
       return null;
     }
-  })();
+  });
+
+  const [currentTheme, setCurrentTheme] = useState(
+    () => localStorage.getItem("theme") || "dark"
+  );
+
+  // Apply the theme immediately and persist the user's preference.
+  useEffect(() => {
+    document.documentElement.dataset.theme = currentTheme;
+    document.documentElement.style.colorScheme = currentTheme;
+    localStorage.setItem("theme", currentTheme);
+  }, [currentTheme]);
+
+  const toggleTheme = () => {
+    setCurrentTheme((previousTheme) =>
+      previousTheme === "dark" ? "light" : "dark"
+    );
+  };
 
   const initials = (user?.name || user?.email || "U")
     .trim()
     .charAt(0)
     .toUpperCase();
 
-  const currentTheme =
-    document.documentElement.dataset.theme ||
-    localStorage.getItem("theme") ||
-    "dark";
-
-  const toggleTheme = () => {
-    const nextTheme = currentTheme === "dark" ? "light" : "dark";
-    localStorage.setItem("theme", nextTheme);
-    document.documentElement.dataset.theme = nextTheme;
-    document.documentElement.style.colorScheme = nextTheme;
-    window.location.reload();
-  };
-
   return (
     <Box
       sx={{
         minHeight: "100vh",
         display: "flex",
+        width: "100%",
         background: "var(--bg, #111216)",
         color: "var(--text-h, #f5f5f5)",
       }}
     >
       <Sidebar />
 
-      <Box sx={{ flex: 1, minWidth: 0 }}>
+      <Box
+        sx={{
+          flex: 1,
+          minWidth: 0,
+          width: 0,
+        }}
+      >
         <AppBar
           position="sticky"
           elevation={0}
@@ -79,15 +93,17 @@ export default function AppLayout({ children }) {
             background: "var(--surface, #17171c)",
             color: "var(--text-h, #f5f5f5)",
             borderBottom: "1px solid var(--border, #303039)",
+            transition: "background 180ms ease, color 180ms ease",
           }}
         >
           <Toolbar
             sx={{
               minHeight: "64px !important",
-              px: { xs: 2, md: 3 },
-              gap: 1.5,
+              px: { xs: 1.5, sm: 2, md: 3 },
+              gap: { xs: 0.75, sm: 1.5 },
             }}
           >
+            {/* Breadcrumb */}
             <Breadcrumbs
               separator="/"
               aria-label="breadcrumb"
@@ -121,6 +137,7 @@ export default function AppLayout({ children }) {
               </Typography>
             </Breadcrumbs>
 
+            {/* Search field */}
             <TextField
               size="small"
               placeholder="Search bugs..."
@@ -130,7 +147,7 @@ export default function AppLayout({ children }) {
                 }
               }}
               sx={{
-                width: { xs: 125, sm: 190, md: 235 },
+                width: { xs: 115, sm: 180, md: 225 },
                 "& .MuiOutlinedInput-root": {
                   borderRadius: 3,
                   color: "inherit",
@@ -138,6 +155,12 @@ export default function AppLayout({ children }) {
                   fontSize: 13,
                   "& fieldset": {
                     borderColor: "var(--border, #303039)",
+                  },
+                  "&:hover fieldset": {
+                    borderColor: "#35c6d2",
+                  },
+                  "&.Mui-focused fieldset": {
+                    borderColor: "#35c6d2",
                   },
                 },
               }}
@@ -154,11 +177,25 @@ export default function AppLayout({ children }) {
               }}
             />
 
-            <Tooltip title="Toggle light/dark theme">
+            {/* Working theme toggle */}
+            <Tooltip
+              title={
+                currentTheme === "dark"
+                  ? "Switch to light mode"
+                  : "Switch to dark mode"
+              }
+            >
               <IconButton
                 onClick={toggleTheme}
-                aria-label="Toggle theme"
-                sx={{ color: "inherit" }}
+                aria-label="Toggle light and dark theme"
+                sx={{
+                  color: "inherit",
+                  transition: "transform 180ms ease",
+                  "&:hover": {
+                    color: "#35c6d2",
+                    transform: "rotate(15deg)",
+                  },
+                }}
               >
                 {currentTheme === "dark" ? (
                   <LightModeRoundedIcon />
@@ -168,6 +205,7 @@ export default function AppLayout({ children }) {
               </IconButton>
             </Tooltip>
 
+            {/* Notifications placeholder */}
             <Tooltip title="Notifications">
               <IconButton
                 aria-label="Notifications"
@@ -177,6 +215,7 @@ export default function AppLayout({ children }) {
               </IconButton>
             </Tooltip>
 
+            {/* Profile shortcut */}
             <Tooltip title={user?.name || user?.email || "Profile"}>
               <IconButton
                 onClick={() => navigate("/profile")}
@@ -185,8 +224,8 @@ export default function AppLayout({ children }) {
               >
                 <Avatar
                   sx={{
-                    width: 32,
-                    height: 32,
+                    width: 34,
+                    height: 34,
                     fontSize: 14,
                     fontWeight: 700,
                     bgcolor: "#28b8c6",
@@ -200,7 +239,16 @@ export default function AppLayout({ children }) {
           </Toolbar>
         </AppBar>
 
-        <Box sx={{ width: "100%", minWidth: 0 }}>
+        {/* Current page content */}
+        <Box
+          sx={{
+            width: "100%",
+            minWidth: 0,
+            minHeight: "calc(100vh - 64px)",
+            background: "var(--bg, #111216)",
+            transition: "background 180ms ease",
+          }}
+        >
           {children}
         </Box>
       </Box>
