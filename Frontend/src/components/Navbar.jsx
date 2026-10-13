@@ -1,4 +1,4 @@
-
+﻿
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 
@@ -18,7 +18,7 @@ import DialogContent from "@mui/material/DialogContent";
 import DialogActions from "@mui/material/DialogActions";
 import Button from "@mui/material/Button";
 import ListItemIcon from "@mui/material/ListItemIcon";
-import PersonOutlineIcon from "@mui/icons-material/PersonOutline";
+import PersonOutlineIcon from "@mui/icons-material/Person";
 import SettingsOutlinedIcon from "@mui/icons-material/SettingsOutlined";
 import LogoutIcon from "@mui/icons-material/Logout";
 import CloseIcon from "@mui/icons-material/Close";
@@ -486,3 +486,4 @@ function Navbar() {
 }
 
 export default Navbar;
+
