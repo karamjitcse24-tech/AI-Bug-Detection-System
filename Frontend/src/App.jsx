@@ -4,8 +4,9 @@ import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import Dashboard from "./pages/Dashboard";
 import Login from "./pages/Login";
 import Signup from "./pages/Signup";
+import AppLayout from "./components/AppLayout";
 
-// Protect all application pages using the existing JWT token.
+// Protect all application pages.
 function ProtectedRoute({ children }) {
   const token = sessionStorage.getItem("token");
 
@@ -13,36 +14,30 @@ function ProtectedRoute({ children }) {
     return <Navigate to="/login" replace />;
   }
 
-  return children;
+  return <AppLayout>{children}</AppLayout>;
 }
 
-// Temporary page until the real section is built.
+// Temporary placeholder until each real page is built.
 function ComingSoon({ title, description }) {
   return (
-    <main
+    <div
       style={{
-        minHeight: "100vh",
-        padding: "40px 24px",
-        boxSizing: "border-box",
-        background: "var(--bg, #111216)",
+        padding: "32px",
+        minHeight: "70vh",
         color: "var(--text-h, #f5f5f5)",
-        fontFamily: "Arial, sans-serif",
+        background: "var(--bg, #111216)",
+        boxSizing: "border-box",
       }}
     >
-      <p style={{ color: "#31b8c6", fontWeight: 700 }}>
+      <p style={{ color: "#35c6d2", fontWeight: 700 }}>
         AI BUG MANAGEMENT SYSTEM
       </p>
-
-      <h1 style={{ fontSize: "2rem", marginBottom: 12 }}>{title}</h1>
-
+      <h1>{title}</h1>
       <p style={{ color: "var(--text, #a0a0a0)", lineHeight: 1.7 }}>
         {description}
       </p>
-
-      <p style={{ marginTop: 28 }}>
-        This section will be implemented in the next development step.
-      </p>
-    </main>
+      <p>This section will be developed in the next step.</p>
+    </div>
   );
 }
 
@@ -60,7 +55,7 @@ function App() {
         <Route path="/login" element={<Login />} />
         <Route path="/signup" element={<Signup />} />
 
-        {/* Protected application routes */}
+        {/* Protected application sections */}
         <Route
           path="/dashboard"
           element={
@@ -76,7 +71,7 @@ function App() {
             <ProtectedRoute>
               <ComingSoon
                 title="Bug Management"
-                description="Create, search, filter, update, delete, and analyze bug reports."
+                description="Search, filter, create, edit, delete, and analyze bug reports."
               />
             </ProtectedRoute>
           }
@@ -88,7 +83,7 @@ function App() {
             <ProtectedRoute>
               <ComingSoon
                 title="Reports & Analytics"
-                description="Explore bug trends, severity distributions, and resolution statistics."
+                description="Review bug trends, severity distributions, and resolution statistics."
               />
             </ProtectedRoute>
           }
@@ -112,7 +107,7 @@ function App() {
             <ProtectedRoute>
               <ComingSoon
                 title="Team Project"
-                description="View project activity, assignments, and team workload."
+                description="View project activity, assignments, and workload."
               />
             </ProtectedRoute>
           }
@@ -124,7 +119,7 @@ function App() {
             <ProtectedRoute>
               <ComingSoon
                 title="Profile & Settings"
-                description="Manage your account and dashboard preferences."
+                description="Manage account information and preferences."
               />
             </ProtectedRoute>
           }
