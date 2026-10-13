@@ -1,619 +1,495 @@
 
-import { useEffect, useState } from "react";
-import { getAllBugs, deleteBug } from "../services/bugService";
+import { useCallback, useEffect, useMemo, useState } from "react";
+import {
+  Alert,
+  Box,
+  Button,
+  Chip,
+  CircularProgress,
+  Grid,
+  Paper,
+  Typography,
+} from "@mui/material";
+import { useNavigate } from "react-router-dom";
+
+import BugReportOutlinedIcon from "@mui/icons-material/BugReportOutlined";
+import TaskAltRoundedIcon from "@mui/icons-material/TaskAltRounded";
+import ErrorOutlineRoundedIcon from "@mui/icons-material/ErrorOutlineRounded";
+import AddRoundedIcon from "@mui/icons-material/AddRounded";
+import RefreshRoundedIcon from "@mui/icons-material/RefreshRounded";
+import ArrowForwardRoundedIcon from "@mui/icons-material/ArrowForwardRounded";
+import TrendingUpRoundedIcon from "@mui/icons-material/TrendingUpRounded";
+
+import DashboardCards from "../components/DashboardCards";
+import Charts from "../components/Charts";
 import BugForm from "../components/BugForm";
+import BugTable from "../components/BugTable";
+import { getAllBugs, deleteBug } from "../services/bugService";
+
+const severityColor = (severity) => {
+  const value = String(severity || "").toLowerCase();
+
+  if (value === "critical") return "error";
+  if (value === "high") return "warning";
+  if (value === "medium") return "info";
+  if (value === "low") return "success";
+
+  return "default";
+};
+
+function SectionHeading({ title, subtitle, action }) {
+  return (
+    <Box
+      sx={{
+        display: "flex",
+        justifyContent: "space-between",
+        alignItems: { xs: "flex-start", sm: "center" },
+        flexWrap: "wrap",
+        gap: 2,
+        mb: 2,
+      }}
+    >
+      <Box>
+        <Typography variant="h6" sx={{ fontWeight: 800 }}>
+          {title}
+        </Typography>
+        {subtitle && (
+          <Typography variant="body2" color="text.secondary" sx={{ mt: 0.5 }}>
+            {subtitle}
+          </Typography>
+        )}
+      </Box>
+      {action}
+    </Box>
+  );
+}
 
 function Dashboard() {
+  const navigate = useNavigate();
+
   const [bugs, setBugs] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState("");
   const [selectedBug, setSelectedBug] = useState(null);
+  const [showForm, setShowForm] = useState(false);
 
-  useEffect(() => {
-    loadBugs();
+  const user = useMemo(() => {
+    try {
+      return JSON.parse(sessionStorage.getItem("user") || "null");
+    } catch {
+      return null;
+    }
   }, []);
 
-  // Load bug reports from the backend.
-  const loadBugs = async () => {
-    try {
-      setLoading(true);
+  const loadBugs = useCallback(async () => {
+    setLoading(true);
+    setLoadError("");
 
+    try {
       const response = await getAllBugs();
 
-      setBugs(Array.isArray(response.data) ? response.data : []);
-    } catch (error) {
-      console.error("Error loading bugs:", error);
+      if (!Array.isArray(response?.data)) {
+        throw new Error("Unexpected bug report response.");
+      }
 
-      alert(
-        "Cannot connect to backend!\n\n" +
-          "Please check that the backend is running and accessible."
+      setBugs(response.data);
+    } catch (error) {
+      console.error("Unable to load bugs:", error);
+
+      setLoadError(
+        error.response?.status === 401
+          ? "Your session has expired. Please log in again."
+          : "Could not load bug reports. Check the backend connection and retry."
       );
     } finally {
       setLoading(false);
     }
-  };
+  }, []);
 
-  // Select a bug for editing.
+  useEffect(() => {
+    loadBugs();
+  }, [loadBugs]);
+
   const handleEdit = (bug) => {
     setSelectedBug(bug);
-
-    window.scrollTo({
-      top: 0,
-      behavior: "smooth",
-    });
+    setShowForm(true);
+    window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
-  // Clear the selected bug.
-  const clearSelection = () => {
-    setSelectedBug(null);
-  };
-
-  // Delete a bug report.
   const handleDelete = async (id) => {
-    const confirmDelete = window.confirm(
-      "Are you sure you want to delete this bug?"
-    );
-
-    if (!confirmDelete) return;
+    if (!window.confirm("Are you sure you want to delete this bug?")) return;
 
     try {
       await deleteBug(id);
-
-      if (selectedBug?.id === id) {
-        clearSelection();
-      }
-
       await loadBugs();
-
-      alert("Bug deleted successfully!");
     } catch (error) {
-      console.error("Error deleting bug:", error);
-      alert("Failed to delete bug!");
+      console.error("Unable to delete bug:", error);
+      window.alert(
+        error.response?.data?.message || "Could not delete this bug."
+      );
     }
   };
 
-  // Theme-aware severity badges.
-  const getSeverityStyle = (severity) => {
-    const value = String(severity || "").toLowerCase();
-
-    if (value.includes("critical") || value.includes("high")) {
-      return {
-        color: "var(--danger-text, #dc2626)",
-        background: "var(--danger-bg, #fee2e2)",
-      };
-    }
-
-    if (value.includes("medium")) {
-      return {
-        color: "var(--warning-text, #b45309)",
-        background: "var(--warning-bg, #fef3c7)",
-      };
-    }
-
-    return {
-      color: "var(--success-text, #15803d)",
-      background: "var(--success-bg, #dcfce7)",
-    };
+  const handleAddBug = () => {
+    setSelectedBug(null);
+    setShowForm(true);
+    window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
-  // Theme-aware status badges.
-  const getStatusStyle = (status) => {
-    const value = String(status || "").toLowerCase();
+  const displayName =
+    user?.name?.trim() || user?.email?.split("@")[0] || "Developer";
 
-    if (value.includes("resolved") || value.includes("closed")) {
-      return {
-        color: "var(--success-text, #15803d)",
-        background: "var(--success-bg, #dcfce7)",
-      };
-    }
+  const isClosed = (bug) =>
+    ["closed", "resolved", "fixed", "completed"].includes(
+      String(bug.status || "").toLowerCase()
+    );
 
-    if (value.includes("progress")) {
-      return {
-        color: "var(--accent)",
-        background: "var(--accent-bg)",
-      };
-    }
+  const openCount = bugs.filter((bug) => !isClosed(bug)).length;
 
-    return {
-      color: "var(--warning-text, #b45309)",
-      background: "var(--warning-bg, #fef3c7)",
-    };
-  };
+  const highPriorityCount = bugs.filter((bug) =>
+    ["critical", "high"].includes(String(bug.severity || "").toLowerCase())
+  ).length;
 
-  const cardStyle = {
+  const resolvedCount = bugs.filter(isClosed).length;
+
+  const panelSx = {
+    p: { xs: 2, sm: 2.5, md: 3 },
+    height: "100%",
     minWidth: 0,
-    background: "var(--surface)",
-    border: "1px solid var(--border)",
-    borderRadius: "16px",
-    padding: "clamp(16px, 2vw, 26px)",
-    boxShadow: "var(--shadow)",
-    color: "var(--text)",
-    transition: "background-color 0.25s ease, color 0.25s ease",
+    borderRadius: 3,
+    bgcolor: "var(--surface, #191a20)",
+    color: "var(--text-h, #f4f5f8)",
+    border: "1px solid var(--border, #30313b)",
+    boxShadow: "none",
   };
 
-  const buttonStyle = {
-    border: "1px solid var(--border)",
-    borderRadius: "8px",
-    padding: "8px 13px",
-    cursor: "pointer",
-    fontWeight: 600,
-    fontSize: "13px",
-    whiteSpace: "nowrap",
-  };
-
-  const openBugs = bugs.filter((bug) => {
-    const status = String(bug.status || "").toLowerCase();
-
-    return !status.includes("resolved") && !status.includes("closed");
-  }).length;
-
-  const closedBugs = bugs.filter((bug) => {
-    const status = String(bug.status || "").toLowerCase();
-
-    return status.includes("resolved") || status.includes("closed");
-  }).length;
-
-  const highSeverityBugs = bugs.filter((bug) => {
-    const severity = String(bug.severity || "").toLowerCase();
-
-    return severity.includes("high") || severity.includes("critical");
-  }).length;
-
-  const summaryCards = [
+  const metricCards = [
     {
-      label: "Total Bugs",
+      title: "Total Bugs",
       value: bugs.length,
-      color: "#1976d2",
-      icon: "🐞",
+      description: "All reported issues",
+      icon: BugReportOutlinedIcon,
+      color: "#7c8cff",
     },
     {
-      label: "Open Bugs",
-      value: openBugs,
-      color: "#ed7900",
-      icon: "!",
+      title: "Open Bugs",
+      value: openCount,
+      description: "Awaiting resolution",
+      icon: ErrorOutlineRoundedIcon,
+      color: "#f4b860",
     },
     {
-      label: "Closed Bugs",
-      value: closedBugs,
-      color: "#27833a",
-      icon: "✓",
+      title: "Resolved Bugs",
+      value: resolvedCount,
+      description: "Completed or fixed",
+      icon: TaskAltRoundedIcon,
+      color: "#39c6a5",
     },
     {
-      label: "High Severity",
-      value: highSeverityBugs,
-      color: "#d72f32",
-      icon: "⚠",
+      title: "High Priority",
+      value: highPriorityCount,
+      description: "Critical and high severity",
+      icon: TrendingUpRoundedIcon,
+      color: "#f1788b",
     },
   ];
 
   return (
-    <main
-      style={{
+    <Box
+      component="main"
+      sx={{
         width: "100%",
-        maxWidth: "100%",
-        minWidth: 0,
-        minHeight: "100vh",
-        margin: 0,
-        padding: "clamp(16px, 2.5vw, 36px)",
+        maxWidth: 1600,
+        mx: "auto",
+        p: { xs: 2, sm: 3, md: 4 },
         boxSizing: "border-box",
-        textAlign: "left",
-        color: "var(--text)",
-        background: "var(--bg)",
-        transition: "background-color 0.25s ease, color 0.25s ease",
+        minWidth: 0,
       }}
     >
       {/* Page heading */}
-      <header
-        style={{
+      <Box
+        sx={{
           display: "flex",
-          flexWrap: "wrap",
+          alignItems: { xs: "flex-start", sm: "center" },
           justifyContent: "space-between",
-          alignItems: "center",
-          gap: "16px",
-          marginBottom: "24px",
+          flexWrap: "wrap",
+          gap: 2,
+          mb: 3,
         }}
       >
-        <div style={{ minWidth: 0 }}>
-          <p
-            style={{
-              color: "var(--accent)",
-              fontWeight: 700,
-              fontSize: "12px",
-              letterSpacing: "1.5px",
-              marginBottom: "8px",
-            }}
-          >
-            PROJECT OVERVIEW
-          </p>
-
-          <h1
-            style={{
-              fontSize: "clamp(25px, 3vw, 38px)",
-              fontWeight: 750,
+        <Box>
+          <Typography
+            variant="h4"
+            sx={{
+              fontWeight: 850,
               letterSpacing: "-1px",
-              lineHeight: 1.2,
-              margin: 0,
-              color: "var(--text-h)",
-              overflowWrap: "anywhere",
+              fontSize: { xs: "1.65rem", sm: "2rem", md: "2.25rem" },
             }}
           >
-            AI Bug Detection System
-          </h1>
+            Dashboard
+          </Typography>
+          <Typography color="text.secondary" sx={{ mt: 0.75 }}>
+            Welcome back, {displayName}. Here's your project overview.
+          </Typography>
+        </Box>
 
-          <p
-            style={{
-              marginTop: "8px",
-              fontSize: "14px",
-              color: "var(--text)",
-            }}
+        <Box sx={{ display: "flex", flexWrap: "wrap", gap: 1 }}>
+          <Button
+            variant="outlined"
+            startIcon={<RefreshRoundedIcon />}
+            onClick={loadBugs}
+            disabled={loading}
+            sx={{ borderRadius: 2, textTransform: "none" }}
           >
-            Manage, review, and track your bug reports.
-          </p>
-        </div>
+            Refresh
+          </Button>
 
-        <button
-          type="button"
-          onClick={loadBugs}
-          disabled={loading}
-          style={{
-            ...buttonStyle,
-            background: "var(--accent)",
-            color: "#ffffff",
-            borderColor: "var(--accent)",
-            padding: "11px 18px",
-            opacity: loading ? 0.7 : 1,
-          }}
-        >
-          {loading ? "Refreshing..." : "↻ Refresh"}
-        </button>
-      </header>
-
-      {/* Bug form */}
-      <section
-        style={{
-          ...cardStyle,
-          marginBottom: "24px",
-        }}
-      >
-        <h2
-          style={{
-            color: "var(--text-h)",
-            fontSize: "clamp(19px, 2vw, 23px)",
-            margin: "0 0 16px",
-          }}
-        >
-          {selectedBug ? "Edit Bug Report" : "Create Bug Report"}
-        </h2>
-
-        <BugForm
-          onBugAdded={loadBugs}
-          selectedBug={selectedBug}
-          clearSelection={clearSelection}
-        />
-      </section>
-
-      {/* Summary cards */}
-      <section
-        aria-label="Bug summary"
-        style={{
-          display: "grid",
-          gridTemplateColumns:
-            "repeat(auto-fit, minmax(min(100%, 220px), 1fr))",
-          gap: "18px",
-          marginBottom: "24px",
-          width: "100%",
-        }}
-      >
-        {summaryCards.map((item) => (
-          <div
-            key={item.label}
-            style={{
-              minWidth: 0,
-              minHeight: "142px",
-              padding: "22px 16px",
-              borderRadius: "14px",
-              background: item.color,
-              color: "#ffffff",
-              boxShadow: "var(--shadow)",
-              display: "flex",
-              flexDirection: "column",
-              alignItems: "center",
-              justifyContent: "center",
-              textAlign: "center",
-              gap: "8px",
-            }}
-          >
-            <span
-              aria-hidden="true"
-              style={{
-                fontSize: item.label === "Open Bugs" ? "30px" : "28px",
-                fontWeight: 800,
-                lineHeight: 1,
-              }}
-            >
-              {item.icon}
-            </span>
-
-            <span
-              style={{
-                fontSize: "14px",
-                fontWeight: 700,
-              }}
-            >
-              {item.label}
-            </span>
-
-            <span
-              style={{
-                fontSize: "32px",
-                fontWeight: 800,
-                lineHeight: 1.1,
-              }}
-            >
-              {item.value}
-            </span>
-          </div>
-        ))}
-      </section>
-
-      {/* Bug reports table */}
-      <section
-        style={{
-          ...cardStyle,
-          width: "100%",
-        }}
-      >
-        <div
-          style={{
-            display: "flex",
-            flexWrap: "wrap",
-            alignItems: "center",
-            justifyContent: "space-between",
-            gap: "12px",
-            marginBottom: "20px",
-          }}
-        >
-          <div>
-            <h2
-              style={{
-                color: "var(--text-h)",
-                fontSize: "clamp(19px, 2vw, 23px)",
-                margin: "0 0 6px",
-              }}
-            >
-              Bug Reports
-            </h2>
-
-            <p style={{ fontSize: "13px", color: "var(--text)" }}>
-              Review bug details and AI recommendations.
-            </p>
-          </div>
-
-          <span
-            style={{
-              borderRadius: "20px",
-              background: "var(--accent-bg)",
-              color: "var(--accent)",
-              padding: "7px 12px",
+          <Button
+            variant="contained"
+            startIcon={<AddRoundedIcon />}
+            onClick={handleAddBug}
+            sx={{
+              borderRadius: 2,
+              textTransform: "none",
               fontWeight: 700,
-              fontSize: "12px",
-              whiteSpace: "nowrap",
+              background: "#31b8c6",
+              color: "#071316",
+              boxShadow: "none",
+              "&:hover": { background: "#54d0dc", boxShadow: "none" },
             }}
           >
-            {bugs.length} reports
-          </span>
-        </div>
+            Add Bug
+          </Button>
+        </Box>
+      </Box>
+
+      {loadError && (
+        <Alert
+          severity="error"
+          sx={{ mb: 3, borderRadius: 2 }}
+          action={
+            <Button color="inherit" size="small" onClick={loadBugs}>
+              Retry
+            </Button>
+          }
+        >
+          {loadError}
+        </Alert>
+      )}
+
+      {/* Existing add/edit form */}
+      {showForm && (
+        <Paper sx={{ ...panelSx, mb: 3 }}>
+          <SectionHeading
+            title={selectedBug ? "Update Bug Report" : "Create Bug Report"}
+            subtitle="Enter the issue details and use AI analysis if needed."
+            action={
+              <Button
+                onClick={() => {
+                  setShowForm(false);
+                  setSelectedBug(null);
+                }}
+                sx={{ textTransform: "none" }}
+              >
+                Cancel
+              </Button>
+            }
+          />
+
+          <BugForm
+            onBugAdded={async () => {
+              setShowForm(false);
+              setSelectedBug(null);
+              await loadBugs();
+            }}
+            selectedBug={selectedBug}
+            clearSelection={() => {
+              setSelectedBug(null);
+              setShowForm(false);
+            }}
+          />
+        </Paper>
+      )}
+
+      {/* Summary metrics */}
+      <SectionHeading
+        title="Project Overview"
+        subtitle="A snapshot of your current bug reports"
+      />
+
+      {loading ? (
+        <Box sx={{ display: "flex", justifyContent: "center", py: 5 }}>
+          <CircularProgress />
+        </Box>
+      ) : !loadError ? (
+        <Grid container spacing={2} sx={{ mb: 3 }}>
+          {metricCards.map((metric) => {
+            const Icon = metric.icon;
+
+            return (
+              <Grid key={metric.title} size={{ xs: 12, sm: 6, xl: 3 }}>
+                <Paper
+                  sx={{
+                    ...panelSx,
+                    p: 2.5,
+                    transition: "transform 160ms ease, border-color 160ms ease",
+                    "&:hover": {
+                      transform: "translateY(-3px)",
+                      borderColor: metric.color,
+                    },
+                  }}
+                >
+                  <Box
+                    sx={{
+                      display: "flex",
+                      justifyContent: "space-between",
+                      alignItems: "flex-start",
+                      gap: 1,
+                    }}
+                  >
+                    <Box>
+                      <Typography variant="body2" color="text.secondary">
+                        {metric.title}
+                      </Typography>
+                      <Typography
+                        sx={{
+                          mt: 1,
+                          fontSize: { xs: 30, md: 36 },
+                          fontWeight: 850,
+                          lineHeight: 1.2,
+                        }}
+                      >
+                        {metric.value}
+                      </Typography>
+                    </Box>
+
+                    <Box
+                      sx={{
+                        display: "grid",
+                        placeItems: "center",
+                        width: 46,
+                        height: 46,
+                        borderRadius: 2.5,
+                        color: metric.color,
+                        bgcolor: `${metric.color}1A`,
+                      }}
+                    >
+                      <Icon sx={{ fontSize: 25 }} />
+                    </Box>
+                  </Box>
+
+                  <Typography
+                    variant="caption"
+                    color="text.secondary"
+                    sx={{ display: "block", mt: 2 }}
+                  >
+                    {metric.description}
+                  </Typography>
+                </Paper>
+              </Grid>
+            );
+          })}
+        </Grid>
+      ) : null}
+
+      {/* Analytics */}
+      <SectionHeading
+        title="Bug Analytics"
+        subtitle="Understand issue severity and resolution status"
+        action={
+          <Button
+            endIcon={<ArrowForwardRoundedIcon />}
+            onClick={() => navigate("/reports")}
+            sx={{ textTransform: "none", fontWeight: 700 }}
+          >
+            View Reports
+          </Button>
+        }
+      />
+
+      {!loading && !loadError && (
+        <Paper sx={{ ...panelSx, mb: 3 }}>
+          <Charts bugs={bugs} />
+        </Paper>
+      )}
+
+      {/* Recent bugs */}
+      <Paper sx={{ ...panelSx, mb: 3 }}>
+        <SectionHeading
+          title="Recent Bug Reports"
+          subtitle="Review and manage the latest issues"
+          action={
+            <Button
+              endIcon={<ArrowForwardRoundedIcon />}
+              onClick={() => navigate("/bugs")}
+              sx={{ textTransform: "none", fontWeight: 700 }}
+            >
+              View All Bugs
+            </Button>
+          }
+        />
 
         {loading ? (
-          <p style={{ padding: "28px 0" }}>Loading bug reports...</p>
+          <Box sx={{ display: "flex", justifyContent: "center", py: 4 }}>
+            <CircularProgress size={28} />
+          </Box>
+        ) : loadError ? (
+          <Typography color="text.secondary">
+            Reports will appear when the connection is restored.
+          </Typography>
         ) : bugs.length === 0 ? (
-          <div
-            style={{
-              textAlign: "center",
-              padding: "42px 16px",
-              background: "var(--surface-secondary)",
-              borderRadius: "12px",
-              color: "var(--text)",
-            }}
-          >
-            <p
-              style={{
-                fontSize: "17px",
-                fontWeight: 700,
-                color: "var(--text-h)",
-              }}
-            >
-              No bug reports found
-            </p>
-
-            <p style={{ fontSize: "13px", marginTop: "8px" }}>
-              Create a bug report using the form above.
-            </p>
-          </div>
+          <Box sx={{ textAlign: "center", py: 5 }}>
+            <BugReportOutlinedIcon
+              sx={{ fontSize: 42, color: "text.secondary", mb: 1 }}
+            />
+            <Typography sx={{ fontWeight: 700 }}>
+              No bug reports yet
+            </Typography>
+            <Typography color="text.secondary" sx={{ mt: 0.5, mb: 2 }}>
+              Create your first report to populate your dashboard.
+            </Typography>
+            <Button variant="contained" onClick={handleAddBug}>
+              Add your first bug
+            </Button>
+          </Box>
         ) : (
-          <div
-            style={{
-              width: "100%",
-              maxWidth: "100%",
-              minWidth: 0,
-              overflowX: "auto",
-              border: "1px solid var(--border)",
-              borderRadius: "10px",
-            }}
-          >
-            <table
-              style={{
-                width: "100%",
-                minWidth: "900px",
-                borderCollapse: "collapse",
-                fontSize: "13px",
-                color: "var(--text)",
-                background: "var(--surface)",
-              }}
-            >
-              <thead>
-                <tr style={{ background: "var(--surface-secondary)" }}>
-                  {[
-                    "ID",
-                    "Title",
-                    "Description",
-                    "Severity",
-                    "Status",
-                    "AI Reason",
-                    "AI Recommendation",
-                    "Actions",
-                  ].map((heading) => (
-                    <th
-                      key={heading}
-                      scope="col"
-                      style={{
-                        padding: "14px 12px",
-                        textAlign: "left",
-                        color: "var(--text-h)",
-                        borderBottom: "1px solid var(--border)",
-                        fontWeight: 700,
-                        whiteSpace: "nowrap",
-                      }}
-                    >
-                      {heading}
-                    </th>
-                  ))}
-                </tr>
-              </thead>
-
-              <tbody>
-                {bugs.map((bug) => (
-                  <tr key={bug.id}>
-                    <td style={cellStyle}>{bug.id}</td>
-
-                    <td
-                      style={{
-                        ...cellStyle,
-                        fontWeight: 700,
-                        color: "var(--text-h)",
-                      }}
-                    >
-                      {bug.title || "Untitled"}
-                    </td>
-
-                    <td
-                      style={{
-                        ...cellStyle,
-                        minWidth: "160px",
-                        maxWidth: "280px",
-                        whiteSpace: "normal",
-                        overflowWrap: "anywhere",
-                      }}
-                    >
-                      {bug.description || "—"}
-                    </td>
-
-                    <td style={cellStyle}>
-                      <span
-                        style={{
-                          ...getSeverityStyle(bug.severity),
-                          display: "inline-block",
-                          padding: "5px 9px",
-                          borderRadius: "20px",
-                          fontWeight: 700,
-                          whiteSpace: "nowrap",
-                        }}
-                      >
-                        {bug.severity || "Not set"}
-                      </span>
-                    </td>
-
-                    <td style={cellStyle}>
-                      <span
-                        style={{
-                          ...getStatusStyle(bug.status),
-                          display: "inline-block",
-                          padding: "5px 9px",
-                          borderRadius: "20px",
-                          fontWeight: 700,
-                          whiteSpace: "nowrap",
-                        }}
-                      >
-                        {bug.status || "Open"}
-                      </span>
-                    </td>
-
-                    <td
-                      style={{
-                        ...cellStyle,
-                        minWidth: "160px",
-                        maxWidth: "280px",
-                        whiteSpace: "normal",
-                        overflowWrap: "anywhere",
-                      }}
-                    >
-                      {bug.aiReason || "Not analyzed yet"}
-                    </td>
-
-                    <td
-                      style={{
-                        ...cellStyle,
-                        minWidth: "160px",
-                        maxWidth: "280px",
-                        whiteSpace: "normal",
-                        overflowWrap: "anywhere",
-                      }}
-                    >
-                      {bug.aiRecommendation || "Not analyzed yet"}
-                    </td>
-
-                    <td style={cellStyle}>
-                      <div
-                        style={{
-                          display: "flex",
-                          flexWrap: "wrap",
-                          gap: "8px",
-                          alignItems: "center",
-                        }}
-                      >
-                        <button
-                          type="button"
-                          onClick={() => handleEdit(bug)}
-                          style={{
-                            ...buttonStyle,
-                            background: "var(--accent-bg)",
-                            color: "var(--accent)",
-                          }}
-                        >
-                          Edit
-                        </button>
-
-                        <button
-                          type="button"
-                          onClick={() => handleDelete(bug.id)}
-                          style={{
-                            ...buttonStyle,
-                            background:
-                              "var(--danger-bg, #fee2e2)",
-                            color:
-                              "var(--danger-text, #dc2626)",
-                          }}
-                        >
-                          Delete
-                        </button>
-                      </div>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
+          <Box sx={{ minWidth: 0, overflowX: "auto" }}>
+            <BugTable
+              bugs={[...bugs]
+                .sort(
+                  (a, b) =>
+                    new Date(b.createdAt || 0) - new Date(a.createdAt || 0)
+                )
+                .slice(0, 5)}
+              onEdit={handleEdit}
+              onDelete={handleDelete}
+            />
+          </Box>
         )}
-      </section>
-    </main>
+      </Paper>
+
+      {/* Severity legend */}
+      {!loading && bugs.length > 0 && (
+        <Box sx={{ display: "flex", flexWrap: "wrap", gap: 1 }}>
+          {["Critical", "High", "Medium", "Low"].map((level) => (
+            <Chip
+              key={level}
+              label={level}
+              size="small"
+              color={severityColor(level)}
+              variant="outlined"
+            />
+          ))}
+        </Box>
+      )}
+
+      {/* Keep the existing DashboardCards component available for reuse
+          while the dedicated Bugs page is built. */}
+      <Box sx={{ display: "none" }}>
+        <DashboardCards bugs={bugs} />
+      </Box>
+    </Box>
   );
 }
-
-const cellStyle = {
-  padding: "13px 12px",
-  textAlign: "left",
-  verticalAlign: "top",
-  borderBottom: "1px solid var(--border)",
-  color: "var(--text)",
-};
 
 export default Dashboard;
