@@ -87,7 +87,7 @@ export default function Sidebar() {
             whiteSpace: "nowrap",
           }}
         >
-          Bug<span style={{ color: "#35c6d2" }}>Nova</span>
+          Bug<span style={{ color: "#35c6d2" }}>Manager</span>
         </Typography>
       </Box>
 
