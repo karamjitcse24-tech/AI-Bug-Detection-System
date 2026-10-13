@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 
 import {
@@ -27,11 +28,7 @@ import AutoAwesomeIcon from "@mui/icons-material/AutoAwesome";
 import LightbulbIcon from "@mui/icons-material/Lightbulb";
 import BuildIcon from "@mui/icons-material/Build";
 
-function BugForm({
-  onBugAdded,
-  selectedBug,
-  clearSelection,
-}) {
+function BugForm({ onBugAdded, selectedBug, clearSelection }) {
   const [bug, setBug] = useState({
     title: "",
     description: "",
@@ -44,7 +41,37 @@ function BugForm({
   const [loadingAI, setLoadingAI] = useState(false);
   const [aiAnalysis, setAiAnalysis] = useState("");
 
-  // Load selected bug data for editing
+  // Theme-aware colors shared by the form controls.
+  const inputStyles = {
+    "& .MuiInputLabel-root": {
+      color: "var(--text)",
+    },
+    "& .MuiInputLabel-root.Mui-focused": {
+      color: "var(--accent)",
+    },
+    "& .MuiOutlinedInput-root": {
+      color: "var(--text-h)",
+      backgroundColor: "var(--surface)",
+      "& fieldset": {
+        borderColor: "var(--border)",
+      },
+      "&:hover fieldset": {
+        borderColor: "var(--accent)",
+      },
+      "&.Mui-focused fieldset": {
+        borderColor: "var(--accent)",
+      },
+    },
+    "& .MuiSvgIcon-root": {
+      color: "var(--text)",
+    },
+    "& .MuiInputBase-input::placeholder": {
+      color: "var(--text)",
+      opacity: 0.8,
+    },
+  };
+
+  // Load selected bug data for editing.
   useEffect(() => {
     if (selectedBug) {
       setBug({
@@ -53,20 +80,15 @@ function BugForm({
         severity: selectedBug.severity || "Low",
         status: selectedBug.status || "Open",
         aiReason: selectedBug.aiReason || "",
-        aiRecommendation:
-          selectedBug.aiRecommendation || "",
+        aiRecommendation: selectedBug.aiRecommendation || "",
       });
 
-      if (
-        selectedBug.aiReason ||
-        selectedBug.aiRecommendation
-      ) {
+      if (selectedBug.aiReason || selectedBug.aiRecommendation) {
         setAiAnalysis(
           `Reason: ${
             selectedBug.aiReason || "Not available"
           }\n\nRecommendation: ${
-            selectedBug.aiRecommendation ||
-            "Not available"
+            selectedBug.aiRecommendation || "Not available"
           }`
         );
       } else {
@@ -77,6 +99,7 @@ function BugForm({
     }
   }, [selectedBug]);
 
+  // Reset form fields.
   const resetFormData = () => {
     setBug({
       title: "",
@@ -90,7 +113,7 @@ function BugForm({
     setAiAnalysis("");
   };
 
-  // Handle input changes
+  // Handle changes in input fields.
   const handleChange = (e) => {
     const { name, value } = e.target;
 
@@ -100,7 +123,7 @@ function BugForm({
     }));
   };
 
-  // AI Analysis using your CURRENT working API
+  // Analyze the bug using the existing AI API.
   const analyzeWithAI = async () => {
     if (!bug.description.trim()) {
       alert("Please enter Bug Description first.");
@@ -111,13 +134,10 @@ function BugForm({
       setLoadingAI(true);
       setAiAnalysis("");
 
-      const result = await analyzeBugWithAI(
-        bug.description
-      );
+      const result = await analyzeBugWithAI(bug.description);
 
       console.log("AI Response:", result);
 
-      // Convert response to readable text
       let aiResult = "";
 
       if (typeof result === "string") {
@@ -131,15 +151,13 @@ function BugForm({
       }
 
       if (!aiResult) {
-        setAiAnalysis(
-          "AI did not return any result."
-        );
+        setAiAnalysis("AI did not return any result.");
         return;
       }
 
       setAiAnalysis(aiResult);
 
-      // Detect severity
+      // Detect severity from the AI response.
       const severityMatch = aiResult.match(
         /\b(Low|Medium|High|Critical)\b/i
       );
@@ -148,15 +166,11 @@ function BugForm({
 
       if (severityMatch) {
         detectedSeverity =
-          severityMatch[1]
-            .charAt(0)
-            .toUpperCase() +
-          severityMatch[1]
-            .slice(1)
-            .toLowerCase();
+          severityMatch[1].charAt(0).toUpperCase() +
+          severityMatch[1].slice(1).toLowerCase();
       }
 
-      // Extract reason
+      // Extract the reason, when present.
       let reason = "";
 
       const reasonMatch = aiResult.match(
@@ -167,20 +181,18 @@ function BugForm({
         reason = reasonMatch[1].trim();
       }
 
-      // Extract recommendation
+      // Extract the recommendation, when present.
       let recommendation = "";
 
-      const recommendationMatch =
-        aiResult.match(
-          /Recommendation:\s*([\s\S]*)/i
-        );
+      const recommendationMatch = aiResult.match(
+        /Recommendation:\s*([\s\S]*)/i
+      );
 
       if (recommendationMatch) {
-        recommendation =
-          recommendationMatch[1].trim();
+        recommendation = recommendationMatch[1].trim();
       }
 
-      // Save AI result in current form state
+      // Update the form with the AI results.
       setBug((prev) => ({
         ...prev,
         severity: detectedSeverity,
@@ -188,10 +200,7 @@ function BugForm({
         aiRecommendation: recommendation,
       }));
     } catch (error) {
-      console.error(
-        "AI Analysis Error:",
-        error
-      );
+      console.error("AI Analysis Error:", error);
 
       setAiAnalysis(
         "Unable to analyze the bug. Please try again."
@@ -201,18 +210,16 @@ function BugForm({
     }
   };
 
-  // Submit Bug
+  // Create a new bug or update an existing bug.
   const handleSubmit = async (e) => {
     e.preventDefault();
 
     try {
       if (selectedBug) {
         await updateBug(selectedBug.id, bug);
-
         alert("Bug Updated Successfully!");
       } else {
         await createBug(bug);
-
         alert("Bug Added Successfully!");
       }
 
@@ -226,11 +233,7 @@ function BugForm({
         await onBugAdded();
       }
     } catch (error) {
-      console.error(
-        "Error saving bug:",
-        error
-      );
-
+      console.error("Error saving bug:", error);
       alert("Failed to save bug");
     }
   };
@@ -239,33 +242,43 @@ function BugForm({
     <Card
       sx={{
         maxWidth: 900,
+        width: "100%",
+        boxSizing: "border-box",
         margin: "30px auto",
         borderRadius: 4,
         boxShadow: 6,
-        padding: 2,
+        padding: { xs: 0.5, sm: 2 },
+        backgroundColor: "var(--surface)",
+        color: "var(--text)",
+        border: "1px solid var(--border)",
+        transition:
+          "background-color 0.25s ease, color 0.25s ease",
       }}
     >
-      <CardContent>
-        {/* HEADING */}
-
+      <CardContent
+        sx={{
+          "&:last-child": {
+            paddingBottom: 3,
+          },
+        }}
+      >
         <Typography
           variant="h4"
           align="center"
           fontWeight="bold"
           gutterBottom
+          sx={{
+            color: "var(--text-h)",
+            fontSize: { xs: "25px", sm: "30px" },
+            mb: 3,
+          }}
         >
-          {selectedBug
-            ? "Update Bug"
-            : "Add New Bug"}
+          {selectedBug ? "Update Bug" : "Add New Bug"}
         </Typography>
 
-        <Box
-          component="form"
-          onSubmit={handleSubmit}
-        >
-          <Grid container spacing={3}>
-            {/* BUG TITLE */}
-
+        <Box component="form" onSubmit={handleSubmit}>
+          <Grid container spacing={2.5}>
+            {/* Bug title */}
             <Grid item xs={12} md={6}>
               <TextField
                 fullWidth
@@ -274,12 +287,12 @@ function BugForm({
                 value={bug.title}
                 onChange={handleChange}
                 required
+                sx={inputStyles}
               />
             </Grid>
 
-            {/* SEVERITY */}
-
-            <Grid item xs={12} md={3}>
+            {/* Severity */}
+            <Grid item xs={12} sm={6} md={3}>
               <TextField
                 select
                 fullWidth
@@ -287,28 +300,17 @@ function BugForm({
                 name="severity"
                 value={bug.severity}
                 onChange={handleChange}
+                sx={inputStyles}
               >
-                <MenuItem value="Low">
-                  Low
-                </MenuItem>
-
-                <MenuItem value="Medium">
-                  Medium
-                </MenuItem>
-
-                <MenuItem value="High">
-                  High
-                </MenuItem>
-
-                <MenuItem value="Critical">
-                  Critical
-                </MenuItem>
+                <MenuItem value="Low">Low</MenuItem>
+                <MenuItem value="Medium">Medium</MenuItem>
+                <MenuItem value="High">High</MenuItem>
+                <MenuItem value="Critical">Critical</MenuItem>
               </TextField>
             </Grid>
 
-            {/* STATUS */}
-
-            <Grid item xs={12} md={3}>
+            {/* Status */}
+            <Grid item xs={12} sm={6} md={3}>
               <TextField
                 select
                 fullWidth
@@ -316,27 +318,18 @@ function BugForm({
                 name="status"
                 value={bug.status}
                 onChange={handleChange}
+                sx={inputStyles}
               >
-                <MenuItem value="Open">
-                  Open
-                </MenuItem>
-
+                <MenuItem value="Open">Open</MenuItem>
                 <MenuItem value="In Progress">
                   In Progress
                 </MenuItem>
-
-                <MenuItem value="Resolved">
-                  Resolved
-                </MenuItem>
-
-                <MenuItem value="Closed">
-                  Closed
-                </MenuItem>
+                <MenuItem value="Resolved">Resolved</MenuItem>
+                <MenuItem value="Closed">Closed</MenuItem>
               </TextField>
             </Grid>
 
-            {/* DESCRIPTION */}
-
+            {/* Bug description */}
             <Grid item xs={12}>
               <TextField
                 fullWidth
@@ -347,11 +340,11 @@ function BugForm({
                 value={bug.description}
                 onChange={handleChange}
                 required
+                sx={inputStyles}
               />
             </Grid>
 
-            {/* AI LOADING */}
-
+            {/* AI loading indicator */}
             {loadingAI && (
               <Grid item xs={12}>
                 <Box
@@ -359,34 +352,43 @@ function BugForm({
                     display: "flex",
                     justifyContent: "center",
                     alignItems: "center",
-                    gap: 1,
+                    gap: 1.5,
+                    color: "var(--text)",
+                    py: 1,
                   }}
                 >
-                  <CircularProgress size={25} />
+                  <CircularProgress
+                    size={25}
+                    sx={{ color: "var(--accent)" }}
+                  />
 
-                  <Typography variant="body2">
+                  <Typography
+                    variant="body2"
+                    sx={{ color: "var(--text)" }}
+                  >
                     AI analyzing bug...
                   </Typography>
                 </Box>
               </Grid>
             )}
 
-            {/* AI ANALYSIS CARD */}
-
+            {/* AI analysis card */}
             {aiAnalysis && !loadingAI && (
               <Grid item xs={12}>
                 <Paper
-                  elevation={4}
+                  elevation={2}
                   sx={{
-                    p: 3,
+                    p: { xs: 2, sm: 3 },
                     borderRadius: 3,
-                    background: "#faf7ff",
-                    border:
-                      "1px solid #d1c4e9",
+                    backgroundColor: "var(--surface-secondary)",
+                    color: "var(--text)",
+                    border: "1px solid var(--border)",
+                    overflowWrap: "anywhere",
+                    transition:
+                      "background-color 0.25s ease, color 0.25s ease",
                   }}
                 >
-                  {/* HEADER */}
-
+                  {/* AI header */}
                   <Box
                     sx={{
                       display: "flex",
@@ -395,22 +397,27 @@ function BugForm({
                       mb: 2,
                     }}
                   >
-                    <AutoAwesomeIcon color="secondary" />
+                    <AutoAwesomeIcon
+                      sx={{ color: "var(--accent)" }}
+                    />
 
                     <Typography
                       variant="h6"
                       fontWeight="bold"
+                      sx={{ color: "var(--text-h)" }}
                     >
                       AI Bug Analysis
                     </Typography>
                   </Box>
 
-                  {/* SEVERITY */}
-
+                  {/* Detected severity */}
                   <Box sx={{ mb: 2 }}>
                     <Typography
                       variant="subtitle2"
-                      sx={{ mb: 1 }}
+                      sx={{
+                        mb: 1,
+                        color: "var(--text)",
+                      }}
                     >
                       Detected Severity
                     </Typography>
@@ -421,21 +428,22 @@ function BugForm({
                         bug.severity === "Critical" ||
                         bug.severity === "High"
                           ? "error"
-                          : bug.severity ===
-                            "Medium"
+                          : bug.severity === "Medium"
                           ? "warning"
                           : "success"
                       }
-                      sx={{
-                        fontWeight: "bold",
-                      }}
+                      sx={{ fontWeight: "bold" }}
                     />
                   </Box>
 
-                  <Divider sx={{ mb: 2 }} />
+                  <Divider
+                    sx={{
+                      mb: 2,
+                      borderColor: "var(--border)",
+                    }}
+                  />
 
-                  {/* REASON */}
-
+                  {/* AI reason */}
                   {bug.aiReason && (
                     <Box sx={{ mb: 2 }}>
                       <Box
@@ -451,6 +459,7 @@ function BugForm({
                         <Typography
                           variant="subtitle1"
                           fontWeight="bold"
+                          sx={{ color: "var(--text-h)" }}
                         >
                           Why this severity?
                         </Typography>
@@ -460,6 +469,8 @@ function BugForm({
                         variant="body1"
                         sx={{
                           lineHeight: 1.7,
+                          color: "var(--text)",
+                          whiteSpace: "pre-line",
                         }}
                       >
                         {bug.aiReason}
@@ -467,8 +478,7 @@ function BugForm({
                     </Box>
                   )}
 
-                  {/* RECOMMENDATION */}
-
+                  {/* AI recommendation */}
                   {bug.aiRecommendation && (
                     <Box>
                       <Box
@@ -484,6 +494,7 @@ function BugForm({
                         <Typography
                           variant="subtitle1"
                           fontWeight="bold"
+                          sx={{ color: "var(--text-h)" }}
                         >
                           Recommended Action
                         </Typography>
@@ -493,6 +504,8 @@ function BugForm({
                         variant="body1"
                         sx={{
                           lineHeight: 1.7,
+                          color: "var(--text)",
+                          whiteSpace: "pre-line",
                         }}
                       >
                         {bug.aiRecommendation}
@@ -500,100 +513,94 @@ function BugForm({
                     </Box>
                   )}
 
-                  {/* FALLBACK */}
-
-                  {!bug.aiReason &&
-                    !bug.aiRecommendation && (
-                      <Typography
-                        variant="body1"
-                        sx={{
-                          whiteSpace:
-                            "pre-line",
-                          lineHeight: 1.7,
-                        }}
-                      >
-                        {aiAnalysis}
-                      </Typography>
-                    )}
+                  {/* Fallback for responses without parsed fields */}
+                  {!bug.aiReason && !bug.aiRecommendation && (
+                    <Typography
+                      variant="body1"
+                      sx={{
+                        whiteSpace: "pre-line",
+                        lineHeight: 1.7,
+                        color: "var(--text)",
+                      }}
+                    >
+                      {aiAnalysis}
+                    </Typography>
+                  )}
                 </Paper>
               </Grid>
             )}
 
-            {/* BUTTONS */}
-
-            <Grid
-              item
-              xs={12}
-              textAlign="center"
-            >
-              {/* ADD / UPDATE */}
-
-              <Button
-                type="submit"
-                variant="contained"
-                size="large"
-                startIcon={
-                  selectedBug
-                    ? <UpdateIcon />
-                    : <AddIcon />
-                }
+            {/* Form buttons */}
+            <Grid item xs={12}>
+              <Box
                 sx={{
-                  px: 5,
-                  py: 1.5,
-                  borderRadius: 3,
-                  fontSize: "16px",
-                  fontWeight: "bold",
-                  mr: 2,
+                  display: "flex",
+                  flexWrap: "wrap",
+                  justifyContent: "center",
+                  alignItems: "center",
+                  gap: 1.5,
+                  mt: 1,
                 }}
               >
-                {selectedBug
-                  ? "Update Bug"
-                  : "Add Bug"}
-              </Button>
-
-              {/* AI BUTTON */}
-
-              <Button
-                type="button"
-                variant="outlined"
-                color="secondary"
-                startIcon={
-                  <AutoAwesomeIcon />
-                }
-                onClick={analyzeWithAI}
-                disabled={loadingAI}
-                sx={{
-                  px: 3,
-                  py: 1.5,
-                  borderRadius: 3,
-                  fontSize: "16px",
-                  fontWeight: "bold",
-                }}
-              >
-                {loadingAI
-                  ? "Analyzing..."
-                  : "Analyze with AI"}
-              </Button>
-
-              {/* CANCEL EDIT */}
-
-              {selectedBug && (
+                {/* Add or update */}
                 <Button
-                  type="button"
-                  onClick={() => {
-                    resetFormData();
-
-                    if (clearSelection) {
-                      clearSelection();
-                    }
-                  }}
+                  type="submit"
+                  variant="contained"
+                  size="large"
+                  startIcon={
+                    selectedBug ? <UpdateIcon /> : <AddIcon />
+                  }
                   sx={{
-                    ml: 2,
+                    px: 3.5,
+                    py: 1.4,
+                    borderRadius: 3,
+                    fontSize: "14px",
+                    fontWeight: "bold",
                   }}
                 >
-                  Cancel Edit
+                  {selectedBug ? "Update Bug" : "Add Bug"}
                 </Button>
-              )}
+
+                {/* Analyze with AI */}
+                <Button
+                  type="button"
+                  variant="outlined"
+                  color="secondary"
+                  startIcon={<AutoAwesomeIcon />}
+                  onClick={analyzeWithAI}
+                  disabled={loadingAI}
+                  sx={{
+                    px: 2.5,
+                    py: 1.4,
+                    borderRadius: 3,
+                    fontSize: "14px",
+                    fontWeight: "bold",
+                  }}
+                >
+                  {loadingAI ? "Analyzing..." : "Analyze with AI"}
+                </Button>
+
+                {/* Cancel edit */}
+                {selectedBug && (
+                  <Button
+                    type="button"
+                    variant="text"
+                    onClick={() => {
+                      resetFormData();
+
+                      if (clearSelection) {
+                        clearSelection();
+                      }
+                    }}
+                    sx={{
+                      color: "var(--text)",
+                      borderRadius: 2,
+                    }}
+                  >
+                    Cancel Edit
+                  </Button>
+                )}
+              </Box>
             </Grid>
           </Grid>
         </Box>
