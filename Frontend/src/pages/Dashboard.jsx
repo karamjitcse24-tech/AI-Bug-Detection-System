@@ -17,6 +17,16 @@ import {
 function Dashboard() {
   const navigate = useNavigate();
 
+  // ================= USER PROFILE =================
+
+  const [user, setUser] = useState(() => {
+    try {
+      return JSON.parse(sessionStorage.getItem("user") || "null");
+    } catch {
+      return null;
+    }
+  });
+
   // ================= STATE =================
 
   const [bugs, setBugs] = useState([]);
@@ -60,7 +70,6 @@ function Dashboard() {
       );
     } catch (error) {
       console.error("Error loading bugs:", error);
-
       setBugs([]);
     }
   };
@@ -87,13 +96,10 @@ function Dashboard() {
 
     try {
       await deleteBug(id);
-
       alert("Bug Deleted Successfully!");
-
       await loadBugs();
     } catch (error) {
       console.error("Delete Error:", error);
-
       alert("Delete Failed");
     }
   };
@@ -110,12 +116,10 @@ function Dashboard() {
       .includes(search.toLowerCase());
 
     const matchesSeverity =
-      severity === "" ||
-      bugSeverity === severity;
+      severity === "" || bugSeverity === severity;
 
     const matchesStatus =
-      status === "" ||
-      bugStatus === status;
+      status === "" || bugStatus === status;
 
     return (
       matchesSearch &&
@@ -137,15 +141,18 @@ function Dashboard() {
     severity !== "" ||
     status !== "";
 
+  // ================= USER DISPLAY =================
+
+  const displayName =
+    user?.name?.trim() ||
+    user?.email?.split("@")[0] ||
+    "Developer";
+
   // ================= DASHBOARD =================
 
   return (
     <>
-      {/* ================= NAVBAR ================= */}
-
       <Navbar />
-
-      {/* ================= MAIN CONTAINER ================= */}
 
       <main
         style={{
@@ -156,21 +163,76 @@ function Dashboard() {
           boxSizing: "border-box",
         }}
       >
-        {/* ================= DASHBOARD HEADER ================= */}
+        {/* ================= WELCOME HEADER ================= */}
 
-        <div
+        <section
           style={{
             display: "flex",
-            justifyContent: "flex-end",
+            justifyContent: "space-between",
             alignItems: "center",
-            marginBottom: "15px",
+            flexWrap: "wrap",
+            gap: "20px",
+            padding: "25px 28px",
+            marginBottom: "25px",
+            borderRadius: "14px",
+            background:
+              "linear-gradient(135deg, #eff6ff 0%, #f5f3ff 100%)",
+            border: "1px solid #e0e7ff",
           }}
         >
+          <div>
+            <p
+              style={{
+                margin: "0 0 8px",
+                color: "#4f46e5",
+                fontSize: "13px",
+                fontWeight: "700",
+                letterSpacing: "1px",
+                textTransform: "uppercase",
+              }}
+            >
+              AI Bug Management System
+            </p>
+
+            <h1
+              style={{
+                margin: "0 0 8px",
+                color: "#111827",
+                fontSize: "clamp(24px, 3vw, 32px)",
+                fontWeight: "800",
+              }}
+            >
+              Welcome back, {displayName}! 👋
+            </h1>
+
+            <p
+              style={{
+                margin: 0,
+                color: "#6b7280",
+                fontSize: "14px",
+              }}
+            >
+              Track, analyze, and manage your bug reports in one place.
+            </p>
+
+            {user?.email && (
+              <p
+                style={{
+                  margin: "10px 0 0",
+                  color: "#4b5563",
+                  fontSize: "13px",
+                }}
+              >
+                Signed in as: {user.email}
+              </p>
+            )}
+          </div>
+
           <button
             type="button"
             onClick={handleLogout}
             style={{
-              padding: "10px 18px",
+              padding: "11px 20px",
               background: "#dc2626",
               color: "#ffffff",
               border: "none",
@@ -178,7 +240,7 @@ function Dashboard() {
               fontSize: "14px",
               fontWeight: "600",
               cursor: "pointer",
-              transition: "background 0.2s ease",
+              whiteSpace: "nowrap",
             }}
             onMouseOver={(event) => {
               event.currentTarget.style.background = "#b91c1c";
@@ -189,45 +251,31 @@ function Dashboard() {
           >
             Logout
           </button>
-        </div>
+        </section>
 
         {/* ================= BUG FORM ================= */}
 
         <BugForm
           onBugAdded={loadBugs}
           selectedBug={selectedBug}
-          clearSelection={() =>
-            setSelectedBug(null)
-          }
+          clearSelection={() => setSelectedBug(null)}
         />
 
         {/* ================= DASHBOARD CARDS ================= */}
 
-        <section
-          style={{
-            marginTop: "25px",
-          }}
-        >
+        <section style={{ marginTop: "25px" }}>
           <DashboardCards bugs={bugs} />
         </section>
 
         {/* ================= CHARTS ================= */}
 
-        <section
-          style={{
-            marginTop: "25px",
-          }}
-        >
+        <section style={{ marginTop: "25px" }}>
           <Charts bugs={bugs} />
         </section>
 
         {/* ================= SEARCH & FILTER ================= */}
 
-        <section
-          style={{
-            marginTop: "25px",
-          }}
-        >
+        <section style={{ marginTop: "25px" }}>
           <SearchFilter
             search={search}
             setSearch={setSearch}
@@ -240,13 +288,7 @@ function Dashboard() {
 
         {/* ================= BUG REPORTS ================= */}
 
-        <section
-          style={{
-            marginTop: "30px",
-          }}
-        >
-          {/* ================= HEADER ================= */}
-
+        <section style={{ marginTop: "30px" }}>
           <div
             style={{
               display: "flex",
@@ -279,8 +321,6 @@ function Dashboard() {
               </p>
             </div>
 
-            {/* ================= FILTER RESULT COUNT ================= */}
-
             <div
               style={{
                 fontSize: "14px",
@@ -307,9 +347,7 @@ function Dashboard() {
                 fontSize: "14px",
               }}
             >
-              <span>
-                Filters are currently applied.
-              </span>
+              <span>Filters are currently applied.</span>
 
               <button
                 type="button"
@@ -354,20 +392,11 @@ function Dashboard() {
                 🐞
               </div>
 
-              <h3
-                style={{
-                  margin: "0 0 8px",
-                }}
-              >
+              <h3 style={{ margin: "0 0 8px" }}>
                 No Bugs Found
               </h3>
 
-              <p
-                style={{
-                  margin: 0,
-                  color: "#777",
-                }}
-              >
+              <p style={{ margin: 0, color: "#777" }}>
                 Try changing your search or filter options.
               </p>
             </div>
