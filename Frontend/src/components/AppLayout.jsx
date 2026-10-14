@@ -56,7 +56,7 @@ function AppLayout({ children }) {
 
   const [currentTheme, setCurrentTheme] = useState(getSavedTheme);
 
-  // Apply the theme to the whole document.
+  // Apply and synchronize the selected theme.
   useEffect(() => {
     const applyTheme = (theme) => {
       const validTheme =
@@ -72,12 +72,10 @@ function AppLayout({ children }) {
 
     applyTheme(getSavedTheme());
 
-    // Listen for theme changes made elsewhere in this tab.
     const handleThemeChange = (event) => {
       applyTheme(event.detail);
     };
 
-    // Listen for changes made in another browser tab.
     const handleStorageChange = (event) => {
       if (event.key === "theme") {
         applyTheme(event.newValue);
@@ -102,7 +100,7 @@ function AppLayout({ children }) {
     try {
       localStorage.setItem("theme", nextTheme);
     } catch {
-      // The current page can still change theme if storage is unavailable.
+      // Continue applying the theme if browser storage is unavailable.
     }
 
     document.documentElement.dataset.theme = nextTheme;
@@ -314,5 +312,6 @@ function AppLayout({ children }) {
     </Box>
   );
 }
+
 export default AppLayout;
 ```
