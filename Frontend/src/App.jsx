@@ -6,6 +6,7 @@ import Bugs from "./pages/Bugs";
 import Reports from "./pages/Reports";
 import Tasks from "./pages/Tasks";
 import Team from "./pages/Team";
+import Profile from "./pages/Profile";
 import Login from "./pages/Login";
 import Signup from "./pages/Signup";
 import AppLayout from "./components/AppLayout";
@@ -18,22 +19,6 @@ function ProtectedRoute({ children }) {
   }
 
   return <AppLayout>{children}</AppLayout>;
-}
-
-function ComingSoon({ title, description }) {
-  return (
-    <div
-      style={{
-        padding: "32px",
-        color: "var(--text, #f3f4f6)",
-      }}
-    >
-      <h1>{title}</h1>
-      <p style={{ color: "var(--text-secondary, #a1a1aa)" }}>
-        {description}
-      </p>
-    </div>
-  );
 }
 
 function App() {
@@ -70,7 +55,7 @@ function App() {
           }
         />
 
-        {/* Reports and Analytics */}
+        {/* Reports & Analytics */}
         <Route
           path="/reports"
           element={
@@ -80,7 +65,7 @@ function App() {
           }
         />
 
-        {/* Task Management */}
+        {/* Tasks */}
         <Route
           path="/tasks"
           element={
@@ -100,15 +85,12 @@ function App() {
           }
         />
 
-        {/* Profile and Settings */}
+        {/* Profile & Settings */}
         <Route
           path="/profile"
           element={
             <ProtectedRoute>
-              <ComingSoon
-                title="Profile & Settings"
-                description="Manage account information and preferences."
-              />
+              <Profile />
             </ProtectedRoute>
           }
         />
