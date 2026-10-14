@@ -190,7 +190,7 @@ function AppLayout({ children }) {
     })
     .map((bug) => ({
       id: String(getBugId(bug)),
-      title: bug?.title || `Bug #${getBugId(bug)}`,
+      title: bug?.title ||; `Bug #${getBugId(bug)}`,
       severity: bug?.severity || "High",
       status: bug?.status || "Open",
     }));
