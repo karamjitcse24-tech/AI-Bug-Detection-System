@@ -1,4 +1,3 @@
-```jsx
 import { useEffect, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 
@@ -314,4 +313,3 @@ function AppLayout({ children }) {
 }
 
 export default AppLayout;
-```
