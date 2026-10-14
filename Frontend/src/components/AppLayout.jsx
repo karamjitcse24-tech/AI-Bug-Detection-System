@@ -40,7 +40,7 @@ function getSavedTheme() {
   }
 }
 
-export default function AppLayout({ children }) {
+function AppLayout({ children }) {
   const location = useLocation();
   const navigate = useNavigate();
 
@@ -314,4 +314,5 @@ export default function AppLayout({ children }) {
     </Box>
   );
 }
+export default AppLayout;
 ```
