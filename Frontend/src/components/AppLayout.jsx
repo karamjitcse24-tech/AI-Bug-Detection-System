@@ -1,13 +1,19 @@
+```jsx
 import { useEffect, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 
 import {
   AppBar,
   Avatar,
+  Badge,
   Box,
   Breadcrumbs,
+  Button,
+  Divider,
   IconButton,
   InputAdornment,
+  Menu,
+  MenuItem,
   TextField,
   Toolbar,
   Tooltip,
@@ -18,8 +24,11 @@ import SearchRoundedIcon from "@mui/icons-material/SearchRounded";
 import NotificationsNoneRoundedIcon from "@mui/icons-material/NotificationsNoneRounded";
 import LightModeRoundedIcon from "@mui/icons-material/LightModeRounded";
 import DarkModeRoundedIcon from "@mui/icons-material/DarkModeRounded";
+import BugReportOutlinedIcon from "@mui/icons-material/BugReportOutlined";
+import PriorityHighRoundedIcon from "@mui/icons-material/PriorityHighRounded";
 
 import Sidebar from "./Sidebar";
+import { getAllBugs } from "../services/bugService";
 
 const pageNames = {
   "/dashboard": "Dashboard",
@@ -39,7 +48,15 @@ function getSavedTheme() {
   }
 }
 
-function AppLayout({ children }) {
+function getSeverity(bug) {
+  return String(bug?.severity || "").toLowerCase();
+}
+
+function getBugId(bug) {
+  return bug?.id ?? bug?.bugId ?? "unknown";
+}
+
+export default function AppLayout({ children }) {
   const location = useLocation();
   const navigate = useNavigate();
 
@@ -54,8 +71,22 @@ function AppLayout({ children }) {
   });
 
   const [currentTheme, setCurrentTheme] = useState(getSavedTheme);
+  const [bugs, setBugs] = useState([]);
+  const [notificationsAnchor, setNotificationsAnchor] = useState(null);
+  const [readNotificationIds, setReadNotificationIds] = useState(() => {
+    try {
+      return JSON.parse(
+        sessionStorage.getItem("bugmanager_read_notifications") || "[]"
+      );
+    } catch {
+      return [];
+    }
+  });
+  const [notificationError, setNotificationError] = useState(false);
 
-  // Apply and synchronize the selected theme.
+  const notificationsOpen = Boolean(notificationsAnchor);
+
+  // Keep the global theme synchronized.
   useEffect(() => {
     const applyTheme = (theme) => {
       const validTheme =
@@ -71,9 +102,7 @@ function AppLayout({ children }) {
 
     applyTheme(getSavedTheme());
 
-    const handleThemeChange = (event) => {
-      applyTheme(event.detail);
-    };
+    const handleThemeChange = (event) => applyTheme(event.detail);
 
     const handleStorageChange = (event) => {
       if (event.key === "theme") {
@@ -93,18 +122,49 @@ function AppLayout({ children }) {
     };
   }, []);
 
+  // Load the authenticated user's existing bug reports.
+  useEffect(() => {
+    let active = true;
+
+    const loadBugs = async () => {
+      try {
+        const response = await getAllBugs();
+        const data = response?.data;
+        const list = Array.isArray(data)
+          ? data
+          : Array.isArray(data?.content)
+            ? data.content
+            : [];
+
+        if (active) {
+          setBugs(list);
+          setNotificationError(false);
+        }
+      } catch {
+        if (active) {
+          setNotificationError(true);
+        }
+      }
+    };
+
+    loadBugs();
+
+    return () => {
+      active = false;
+    };
+  }, [location.pathname]);
+
   const toggleTheme = () => {
     const nextTheme = currentTheme === "dark" ? "light" : "dark";
 
     try {
       localStorage.setItem("theme", nextTheme);
     } catch {
-      // Continue applying the theme if browser storage is unavailable.
+      // Continue applying the theme if storage is unavailable.
     }
 
     document.documentElement.dataset.theme = nextTheme;
     document.documentElement.style.colorScheme = nextTheme;
-
     setCurrentTheme(nextTheme);
 
     window.dispatchEvent(
@@ -112,6 +172,55 @@ function AppLayout({ children }) {
         detail: nextTheme,
       })
     );
+  };
+
+  // Show unresolved high/critical bugs as actionable notifications.
+  const notifications = bugs
+    .filter((bug) => {
+      const severity = getSeverity(bug);
+      const status = String(bug?.status || "").toLowerCase();
+
+      const isHighPriority =
+        severity === "critical" || severity === "high";
+
+      const isUnresolved =
+        status !== "resolved" &&
+        status !== "closed" &&
+        status !== "fixed";
+
+      return isHighPriority && isUnresolved;
+    })
+    .map((bug) => ({
+      id: String(getBugId(bug)),
+      title: bug?.title || `Bug #${getBugId(bug)}`,
+      severity: bug?.severity || "High",
+      status: bug?.status || "Open",
+    }));
+
+  const unreadNotifications = notifications.filter(
+    (notification) => !readNotificationIds.includes(notification.id)
+  );
+
+  const markAllNotificationsRead = () => {
+    const ids = notifications.map((notification) => notification.id);
+    const updated = Array.from(new Set([...readNotificationIds, ...ids]));
+
+    setReadNotificationIds(updated);
+
+    try {
+      sessionStorage.setItem(
+        "bugmanager_read_notifications",
+        JSON.stringify(updated)
+      );
+    } catch {
+      // Notifications still update in the current session.
+    }
+  };
+
+  const openNotification = (notification) => {
+    markAllNotificationsRead();
+    setNotificationsAnchor(null);
+    navigate("/bugs");
   };
 
   const initials = (user?.name || user?.email || "U")
@@ -132,13 +241,7 @@ function AppLayout({ children }) {
     >
       <Sidebar />
 
-      <Box
-        sx={{
-          flex: 1,
-          minWidth: 0,
-          width: 0,
-        }}
-      >
+      <Box sx={{ flex: 1, minWidth: 0, width: 0 }}>
         <AppBar
           position="sticky"
           elevation={0}
@@ -193,9 +296,7 @@ function AppLayout({ children }) {
               size="small"
               placeholder="Search bugs..."
               onKeyDown={(event) => {
-                if (event.key === "Enter") {
-                  navigate("/bugs");
-                }
+                if (event.key === "Enter") navigate("/bugs");
               }}
               sx={{
                 width: { xs: 115, sm: 180, md: 225 },
@@ -207,10 +308,7 @@ function AppLayout({ children }) {
                   "& fieldset": {
                     borderColor: "var(--border, #303039)",
                   },
-                  "&:hover fieldset": {
-                    borderColor: "#35c6d2",
-                  },
-                  "&.Mui-focused fieldset": {
+                  "&:hover fieldset, &.Mui-focused fieldset": {
                     borderColor: "#35c6d2",
                   },
                 },
@@ -247,11 +345,7 @@ function AppLayout({ children }) {
                 aria-label="Toggle light and dark theme"
                 sx={{
                   color: "inherit",
-                  transition: "transform 180ms ease",
-                  "&:hover": {
-                    color: "#35c6d2",
-                    transform: "rotate(15deg)",
-                  },
+                  "&:hover": { color: "#35c6d2" },
                 }}
               >
                 {currentTheme === "dark" ? (
@@ -264,12 +358,174 @@ function AppLayout({ children }) {
 
             <Tooltip title="Notifications">
               <IconButton
-                aria-label="Notifications"
+                aria-label="Open notifications"
+                aria-haspopup="true"
+                aria-expanded={notificationsOpen}
+                onClick={(event) =>
+                  setNotificationsAnchor(event.currentTarget)
+                }
                 sx={{ color: "inherit" }}
               >
-                <NotificationsNoneRoundedIcon />
+                <Badge
+                  badgeContent={unreadNotifications.length}
+                  color="error"
+                  max={99}
+                >
+                  <NotificationsNoneRoundedIcon />
+                </Badge>
               </IconButton>
             </Tooltip>
+
+            <Menu
+              anchorEl={notificationsAnchor}
+              open={notificationsOpen}
+              onClose={() => setNotificationsAnchor(null)}
+              anchorOrigin={{ vertical: "bottom", horizontal: "right" }}
+              transformOrigin={{ vertical: "top", horizontal: "right" }}
+              slotProps={{
+                paper: {
+                  sx: {
+                    width: { xs: 300, sm: 360 },
+                    maxWidth: "calc(100vw - 24px)",
+                    maxHeight: 440,
+                    mt: 1,
+                    backgroundColor: "var(--surface, #17171c)",
+                    color: "var(--text-h, #f5f5f5)",
+                    border: "1px solid var(--border, #303039)",
+                    backgroundImage: "none",
+                  },
+                },
+              }}
+            >
+              <Box
+                sx={{
+                  px: 2,
+                  py: 1.5,
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "space-between",
+                  gap: 1,
+                }}
+              >
+                <Box>
+                  <Typography fontWeight={700}>
+                    Notifications
+                  </Typography>
+                  <Typography variant="caption" color="text.secondary">
+                    High-priority unresolved bugs
+                  </Typography>
+                </Box>
+
+                {unreadNotifications.length > 0 && (
+                  <Button
+                    size="small"
+                    onClick={markAllNotificationsRead}
+                    sx={{ textTransform: "none", whiteSpace: "nowrap" }}
+                  >
+                    Mark all read
+                  </Button>
+                )}
+              </Box>
+
+              <Divider sx={{ borderColor: "var(--border, #303039)" }} />
+
+              {notificationError ? (
+                <Box sx={{ p: 2 }}>
+                  <Typography variant="body2">
+                    Notifications couldn't be loaded.
+                  </Typography>
+                  <Typography variant="caption" color="text.secondary">
+                    Check your connection and reopen this menu.
+                  </Typography>
+                </Box>
+              ) : notifications.length === 0 ? (
+                <Box sx={{ p: 3, textAlign: "center" }}>
+                  <NotificationsNoneRoundedIcon
+                    sx={{ fontSize: 34, color: "text.secondary", mb: 1 }}
+                  />
+                  <Typography fontWeight={600}>
+                    You're all caught up
+                  </Typography>
+                  <Typography variant="body2" color="text.secondary">
+                    No high-priority unresolved bugs found.
+                  </Typography>
+                </Box>
+              ) : (
+                notifications.map((notification) => {
+                  const unread = !readNotificationIds.includes(
+                    notification.id
+                  );
+
+                  return (
+                    <MenuItem
+                      key={notification.id}
+                      onClick={() => openNotification(notification)}
+                      sx={{
+                        whiteSpace: "normal",
+                        alignItems: "flex-start",
+                        gap: 1.5,
+                        py: 1.5,
+                        backgroundColor: unread
+                          ? "var(--surface-secondary, #222229)"
+                          : "transparent",
+                      }}
+                    >
+                      {notification.severity.toLowerCase() === "critical" ? (
+                        <PriorityHighRoundedIcon color="error" />
+                      ) : (
+                        <BugReportOutlinedIcon sx={{ color: "#e6a23c" }} />
+                      )}
+
+                      <Box sx={{ flex: 1, minWidth: 0 }}>
+                        <Typography
+                          variant="body2"
+                          fontWeight={unread ? 700 : 500}
+                        >
+                          {notification.title}
+                        </Typography>
+                        <Typography
+                          variant="caption"
+                          color="text.secondary"
+                          sx={{ display: "block", mt: 0.4 }}
+                        >
+                          {notification.severity} priority ·{" "}
+                          {notification.status}
+                        </Typography>
+                      </Box>
+
+                      {unread && (
+                        <Box
+                          aria-label="Unread"
+                          sx={{
+                            width: 8,
+                            height: 8,
+                            borderRadius: "50%",
+                            bgcolor: "#35c6d2",
+                            mt: 0.7,
+                            flexShrink: 0,
+                          }}
+                        />
+                      )}
+                    </MenuItem>
+                  );
+                })
+              )}
+
+              <Divider sx={{ borderColor: "var(--border, #303039)" }} />
+
+              <Box sx={{ p: 1 }}>
+                <Button
+                  fullWidth
+                  onClick={() => {
+                    setNotificationsAnchor(null);
+                    navigate("/bugs");
+                  }}
+                  sx={{ textTransform: "none" }}
+                >
+                  View all bugs
+                </Button>
+              </Box>
+            </Menu>
 
             <Tooltip title={user?.name || user?.email || "Profile"}>
               <IconButton
@@ -311,5 +567,4 @@ function AppLayout({ children }) {
     </Box>
   );
 }
-
-export default AppLayout;
+```
