@@ -43,6 +43,7 @@ const COLORS = [
 const panelSx = {
   p: 2.5,
   height: "100%",
+  minWidth: 0,
   borderRadius: 3,
   bgcolor: "var(--surface, #191a20)",
   color: "var(--text, #f3f4f6)",
@@ -57,14 +58,26 @@ const chartTooltipStyle = {
   color: "#f3f4f6",
 };
 
+const chartTextStyle = {
+  fill: "#a1a1aa",
+  fontSize: 12,
+};
+
 function normalize(value) {
   return String(value ?? "").trim().toLowerCase();
 }
 
 function getDate(value) {
   if (!value) return null;
+
   const date = new Date(value);
   return Number.isNaN(date.getTime()) ? null : date;
+}
+
+function isResolvedBug(bug) {
+  return ["resolved", "closed", "fixed", "completed"].includes(
+    normalize(bug.status)
+  );
 }
 
 function StatCard({ title, value, subtitle, icon, color }) {
@@ -75,6 +88,7 @@ function StatCard({ title, value, subtitle, icon, color }) {
           <Typography variant="body2" color="text.secondary">
             {title}
           </Typography>
+
           <Typography
             variant="h4"
             fontWeight={800}
@@ -82,6 +96,7 @@ function StatCard({ title, value, subtitle, icon, color }) {
           >
             {value}
           </Typography>
+
           <Typography variant="caption" color="text.secondary">
             {subtitle}
           </Typography>
@@ -106,6 +121,32 @@ function StatCard({ title, value, subtitle, icon, color }) {
   );
 }
 
+function ChartPanel({ title, subtitle, children, height = 300 }) {
+  return (
+    <Paper sx={panelSx}>
+      <Typography variant="h6" fontWeight={700} gutterBottom>
+        {title}
+      </Typography>
+
+      <Typography variant="body2" color="text.secondary" mb={2}>
+        {subtitle}
+      </Typography>
+
+      <Box
+        sx={{
+          width: "100%",
+          height,
+          minWidth: 0,
+          minHeight: height,
+          position: "relative",
+        }}
+      >
+        {children}
+      </Box>
+    </Paper>
+  );
+}
+
 export default function Reports() {
   const [bugs, setBugs] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -120,13 +161,16 @@ export default function Reports() {
         setError("");
 
         const response = await getAllBugs();
+
         const records = Array.isArray(response?.data)
           ? response.data
           : Array.isArray(response)
             ? response
             : [];
 
-        if (active) setBugs(records);
+        if (active) {
+          setBugs(records);
+        }
       } catch (err) {
         if (active) {
           setError(
@@ -135,7 +179,9 @@ export default function Reports() {
           );
         }
       } finally {
-        if (active) setLoading(false);
+        if (active) {
+          setLoading(false);
+        }
       }
     }
 
@@ -147,17 +193,12 @@ export default function Reports() {
   }, []);
 
   const stats = useMemo(() => {
-    const isResolved = (bug) =>
-      ["resolved", "closed", "fixed", "completed"].includes(
-        normalize(bug.status)
-      );
+    const resolved = bugs.filter(isResolvedBug).length;
+    const open = bugs.length - resolved;
 
-    const isHighPriority = (bug) =>
-      ["critical", "high"].includes(normalize(bug.severity));
-
-    const resolved = bugs.filter(isResolved).length;
-    const open = bugs.filter((bug) => !isResolved(bug)).length;
-    const highPriority = bugs.filter(isHighPriority).length;
+    const highPriority = bugs.filter((bug) =>
+      ["critical", "high"].includes(normalize(bug.severity))
+    ).length;
 
     return {
       total: bugs.length,
@@ -180,7 +221,9 @@ export default function Reports() {
 
     return categories.map(({ key, label }) => ({
       name: label,
-      count: bugs.filter((bug) => normalize(bug.severity) === key).length,
+      count: bugs.filter(
+        (bug) => normalize(bug.severity) === key
+      ).length,
     }));
   }, [bugs]);
 
@@ -194,14 +237,15 @@ export default function Reports() {
 
     return categories.map(({ key, label }) => ({
       name: label,
-      value: bugs.filter((bug) => normalize(bug.status) === key).length,
+      value: bugs.filter(
+        (bug) => normalize(bug.status) === key
+      ).length,
     }));
   }, [bugs]);
 
   const trendData = useMemo(() => {
     const months = [];
 
-    // Show the current month and the preceding five months.
     for (let i = 5; i >= 0; i--) {
       const date = new Date();
       date.setDate(1);
@@ -226,20 +270,19 @@ export default function Reports() {
       const key = `${created.getFullYear()}-${created.getMonth()}`;
       const month = months.find((item) => item.key === key);
 
-      if (month) {
-        month.reported += 1;
+      if (!month) return;
 
-        const updated = getDate(bug.updatedAt);
-        const status = normalize(bug.status);
+      month.reported += 1;
 
-        if (
-          ["resolved", "closed", "fixed", "completed"].includes(status) &&
-          updated &&
-          updated.getFullYear() === created.getFullYear() &&
-          updated.getMonth() === created.getMonth()
-        ) {
-          month.resolved += 1;
-        }
+      const updated = getDate(bug.updatedAt);
+
+      if (
+        isResolvedBug(bug) &&
+        updated &&
+        updated.getFullYear() === created.getFullYear() &&
+        updated.getMonth() === created.getMonth()
+      ) {
+        month.resolved += 1;
       }
     });
 
@@ -268,15 +311,22 @@ export default function Reports() {
     <Box
       sx={{
         p: { xs: 2, md: 3 },
-        color: "var(--text, #f3f4f6)",
         width: "100%",
+        minWidth: 0,
         boxSizing: "border-box",
+        color: "var(--text, #f3f4f6)",
       }}
     >
       <Box mb={3}>
-        <Typography variant="h4" fontWeight={800} gutterBottom>
+        <Typography
+          variant="h4"
+          fontWeight={800}
+          gutterBottom
+          sx={{ overflowWrap: "anywhere" }}
+        >
           Reports &amp; Analytics
         </Typography>
+
         <Typography color="text.secondary">
           Understand bug severity, resolution progress, and reporting trends.
         </Typography>
@@ -332,121 +382,137 @@ export default function Reports() {
 
       <Grid container spacing={2.5}>
         <Grid item xs={12} lg={6}>
-          <Paper sx={panelSx}>
-            <Typography variant="h6" fontWeight={700} gutterBottom>
-              Bugs by Severity
-            </Typography>
-            <Typography variant="body2" color="text.secondary" mb={2}>
-              Distribution across severity levels
-            </Typography>
+          <ChartPanel
+            title="Bugs by Severity"
+            subtitle="Distribution across severity levels"
+          >
+            <ResponsiveContainer
+              width="100%"
+              height="100%"
+              minWidth={0}
+              minHeight={200}
+            >
+              <BarChart
+                data={severityData}
+                margin={{ top: 10, right: 10, left: -15, bottom: 5 }}
+              >
+                <CartesianGrid
+                  strokeDasharray="3 3"
+                  stroke="#41424c"
+                  vertical={false}
+                />
 
-            <Box height={300}>
-              <ResponsiveContainer width="100%" height="100%">
-                <BarChart
-                  data={severityData}
-                  margin={{ top: 10, right: 10, left: -15, bottom: 5 }}
-                >
-                  <CartesianGrid
-                    strokeDasharray="3 3"
-                    stroke="#41424c"
-                    vertical={false}
-                  />
-                  <XAxis dataKey="name" tick={{ fill: "#a1a1aa" }} />
-                  <YAxis allowDecimals={false} tick={{ fill: "#a1a1aa" }} />
-                  <Tooltip contentStyle={chartTooltipStyle} />
-                  <Bar
-                    dataKey="count"
-                    name="Bugs"
-                    fill="#22d3ee"
-                    radius={[6, 6, 0, 0]}
-                  />
-                </BarChart>
-              </ResponsiveContainer>
-            </Box>
-          </Paper>
+                <XAxis dataKey="name" tick={chartTextStyle} />
+                <YAxis
+                  allowDecimals={false}
+                  tick={chartTextStyle}
+                />
+
+                <Tooltip contentStyle={chartTooltipStyle} />
+
+                <Bar
+                  dataKey="count"
+                  name="Bugs"
+                  fill="#22d3ee"
+                  radius={[6, 6, 0, 0]}
+                  maxBarSize={55}
+                />
+              </BarChart>
+            </ResponsiveContainer>
+          </ChartPanel>
         </Grid>
 
         <Grid item xs={12} lg={6}>
-          <Paper sx={panelSx}>
-            <Typography variant="h6" fontWeight={700} gutterBottom>
-              Status Distribution
-            </Typography>
-            <Typography variant="body2" color="text.secondary" mb={2}>
-              Current state of your bug reports
-            </Typography>
+          <ChartPanel
+            title="Status Distribution"
+            subtitle="Current state of your bug reports"
+          >
+            <ResponsiveContainer
+              width="100%"
+              height="100%"
+              minWidth={0}
+              minHeight={200}
+            >
+              <PieChart>
+                <Pie
+                  data={statusData}
+                  dataKey="value"
+                  nameKey="name"
+                  cx="50%"
+                  cy="45%"
+                  outerRadius="70%"
+                  innerRadius="42%"
+                  paddingAngle={3}
+                >
+                  {statusData.map((entry, index) => (
+                    <Cell
+                      key={entry.name}
+                      fill={COLORS[index % COLORS.length]}
+                    />
+                  ))}
+                </Pie>
 
-            <Box height={300}>
-              <ResponsiveContainer width="100%" height="100%">
-                <PieChart>
-                  <Pie
-                    data={statusData}
-                    dataKey="value"
-                    nameKey="name"
-                    cx="50%"
-                    cy="45%"
-                    outerRadius={95}
-                    innerRadius={55}
-                    paddingAngle={3}
-                  >
-                    {statusData.map((entry, index) => (
-                      <Cell
-                        key={entry.name}
-                        fill={COLORS[index % COLORS.length]}
-                      />
-                    ))}
-                  </Pie>
-                  <Tooltip contentStyle={chartTooltipStyle} />
-                  <Legend />
-                </PieChart>
-              </ResponsiveContainer>
-            </Box>
-          </Paper>
+                <Tooltip contentStyle={chartTooltipStyle} />
+                <Legend />
+              </PieChart>
+            </ResponsiveContainer>
+          </ChartPanel>
         </Grid>
 
         <Grid item xs={12}>
-          <Paper sx={panelSx}>
-            <Typography variant="h6" fontWeight={700} gutterBottom>
-              Reporting Trend
-            </Typography>
-            <Typography variant="body2" color="text.secondary" mb={2}>
-              Monthly reports based on recorded creation dates
-            </Typography>
+          <ChartPanel
+            title="Reporting Trend"
+            subtitle="Monthly reports based on recorded creation dates"
+            height={320}
+          >
+            <ResponsiveContainer
+              width="100%"
+              height="100%"
+              minWidth={0}
+              minHeight={200}
+            >
+              <LineChart
+                data={trendData}
+                margin={{ top: 10, right: 20, left: -15, bottom: 5 }}
+              >
+                <CartesianGrid
+                  strokeDasharray="3 3"
+                  stroke="#41424c"
+                  vertical={false}
+                />
 
-            <Box height={320}>
-              <ResponsiveContainer width="100%" height="100%">
-                <LineChart
-                  data={trendData}
-                  margin={{ top: 10, right: 20, left: -15, bottom: 5 }}
-                >
-                  <CartesianGrid
-                    strokeDasharray="3 3"
-                    stroke="#41424c"
-                    vertical={false}
-                  />
-                  <XAxis dataKey="month" tick={{ fill: "#a1a1aa" }} />
-                  <YAxis allowDecimals={false} tick={{ fill: "#a1a1aa" }} />
-                  <Tooltip contentStyle={chartTooltipStyle} />
-                  <Legend />
-                  <Line
-                    type="monotone"
-                    dataKey="reported"
-                    name="Reported"
-                    stroke="#22d3ee"
-                    strokeWidth={3}
-                    dot={{ r: 4 }}
-                  />
-                  <Line
-                    type="monotone"
-                    dataKey="resolved"
-                    name="Resolved in creation month"
-                    stroke="#34d399"
-                    strokeWidth={3}
-                    dot={{ r: 4 }}
-                  />
-                </LineChart>
-              </ResponsiveContainer>
-            </Box>
-          </Paper>
+                <XAxis dataKey="month" tick={chartTextStyle} />
+
+                <YAxis
+                  allowDecimals={false}
+                  tick={chartTextStyle}
+                />
+
+                <Tooltip contentStyle={chartTooltipStyle} />
+                <Legend />
+
+                <Line
+                  type="monotone"
+                  dataKey="reported"
+                  name="Reported"
+                  stroke="#22d3ee"
+                  strokeWidth={3}
+                  dot={{ r: 4 }}
+                  activeDot={{ r: 6 }}
+                />
+
+                <Line
+                  type="monotone"
+                  dataKey="resolved"
+                  name="Resolved in creation month"
+                  stroke="#34d399"
+                  strokeWidth={3}
+                  dot={{ r: 4 }}
+                  activeDot={{ r: 6 }}
+                />
+              </LineChart>
+            </ResponsiveContainer>
+          </ChartPanel>
         </Grid>
       </Grid>
 
