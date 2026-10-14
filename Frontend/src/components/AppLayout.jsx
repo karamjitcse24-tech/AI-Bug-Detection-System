@@ -56,7 +56,7 @@ function getBugId(bug) {
   return bug?.id ?? bug?.bugId ?? "unknown";
 }
 
-export default function AppLayout({ children }) {
+function AppLayout({ children }) {
   const location = useLocation();
   const navigate = useNavigate();
 
@@ -73,20 +73,24 @@ export default function AppLayout({ children }) {
   const [currentTheme, setCurrentTheme] = useState(getSavedTheme);
   const [bugs, setBugs] = useState([]);
   const [notificationsAnchor, setNotificationsAnchor] = useState(null);
+
   const [readNotificationIds, setReadNotificationIds] = useState(() => {
     try {
-      return JSON.parse(
+      const saved = JSON.parse(
         sessionStorage.getItem("bugmanager_read_notifications") || "[]"
       );
+
+      return Array.isArray(saved) ? saved : [];
     } catch {
       return [];
     }
   });
+
   const [notificationError, setNotificationError] = useState(false);
 
   const notificationsOpen = Boolean(notificationsAnchor);
 
-  // Keep the global theme synchronized.
+  // Keep the selected theme synchronized throughout the application.
   useEffect(() => {
     const applyTheme = (theme) => {
       const validTheme =
@@ -102,7 +106,9 @@ export default function AppLayout({ children }) {
 
     applyTheme(getSavedTheme());
 
-    const handleThemeChange = (event) => applyTheme(event.detail);
+    const handleThemeChange = (event) => {
+      applyTheme(event.detail);
+    };
 
     const handleStorageChange = (event) => {
       if (event.key === "theme") {
@@ -118,11 +124,12 @@ export default function AppLayout({ children }) {
         "bugmanager-theme-change",
         handleThemeChange
       );
+
       window.removeEventListener("storage", handleStorageChange);
     };
   }, []);
 
-  // Load the authenticated user's existing bug reports.
+  // Load bug reports for the signed-in user.
   useEffect(() => {
     let active = true;
 
@@ -130,6 +137,7 @@ export default function AppLayout({ children }) {
       try {
         const response = await getAllBugs();
         const data = response?.data;
+
         const list = Array.isArray(data)
           ? data
           : Array.isArray(data?.content)
@@ -160,11 +168,12 @@ export default function AppLayout({ children }) {
     try {
       localStorage.setItem("theme", nextTheme);
     } catch {
-      // Continue applying the theme if storage is unavailable.
+      // The theme can still change if storage is unavailable.
     }
 
     document.documentElement.dataset.theme = nextTheme;
     document.documentElement.style.colorScheme = nextTheme;
+
     setCurrentTheme(nextTheme);
 
     window.dispatchEvent(
@@ -174,7 +183,7 @@ export default function AppLayout({ children }) {
     );
   };
 
-  // Show unresolved high/critical bugs as actionable notifications.
+  // High-priority bugs that have not been resolved are notifications.
   const notifications = bugs
     .filter((bug) => {
       const severity = getSeverity(bug);
@@ -183,16 +192,17 @@ export default function AppLayout({ children }) {
       const isHighPriority =
         severity === "critical" || severity === "high";
 
-      const isUnresolved =
-        status !== "resolved" &&
-        status !== "closed" &&
-        status !== "fixed";
+      const isUnresolved = ![
+        "resolved",
+        "closed",
+        "fixed",
+      ].includes(status);
 
       return isHighPriority && isUnresolved;
     })
     .map((bug) => ({
       id: String(getBugId(bug)),
-     title: bug?.title || "Bug #" + getBugId(bug),
+      title: bug?.title || `Bug #${getBugId(bug)}`,
       severity: bug?.severity || "High",
       status: bug?.status || "Open",
     }));
@@ -203,7 +213,10 @@ export default function AppLayout({ children }) {
 
   const markAllNotificationsRead = () => {
     const ids = notifications.map((notification) => notification.id);
-    const updated = Array.from(new Set([...readNotificationIds, ...ids]));
+
+    const updated = Array.from(
+      new Set([...readNotificationIds, ...ids])
+    );
 
     setReadNotificationIds(updated);
 
@@ -213,17 +226,17 @@ export default function AppLayout({ children }) {
         JSON.stringify(updated)
       );
     } catch {
-      // Notifications still update in the current session.
+      // The current page still updates if storage is unavailable.
     }
   };
 
-  const openNotification = (notification) => {
+  const openNotification = () => {
     markAllNotificationsRead();
     setNotificationsAnchor(null);
     navigate("/bugs");
   };
 
-  const initials = (user?.name || user?.email || "U")
+  const initials = String(user?.name || user?.email || "U")
     .trim()
     .charAt(0)
     .toUpperCase();
@@ -241,7 +254,13 @@ export default function AppLayout({ children }) {
     >
       <Sidebar />
 
-      <Box sx={{ flex: 1, minWidth: 0, width: 0 }}>
+      <Box
+        sx={{
+          flex: 1,
+          minWidth: 0,
+          width: 0,
+        }}
+      >
         <AppBar
           position="sticky"
           elevation={0}
@@ -296,7 +315,9 @@ export default function AppLayout({ children }) {
               size="small"
               placeholder="Search bugs..."
               onKeyDown={(event) => {
-                if (event.key === "Enter") navigate("/bugs");
+                if (event.key === "Enter") {
+                  navigate("/bugs");
+                }
               }}
               sx={{
                 width: { xs: 115, sm: 180, md: 225 },
@@ -345,7 +366,9 @@ export default function AppLayout({ children }) {
                 aria-label="Toggle light and dark theme"
                 sx={{
                   color: "inherit",
-                  "&:hover": { color: "#35c6d2" },
+                  "&:hover": {
+                    color: "#35c6d2",
+                  },
                 }}
               >
                 {currentTheme === "dark" ? (
@@ -380,8 +403,14 @@ export default function AppLayout({ children }) {
               anchorEl={notificationsAnchor}
               open={notificationsOpen}
               onClose={() => setNotificationsAnchor(null)}
-              anchorOrigin={{ vertical: "bottom", horizontal: "right" }}
-              transformOrigin={{ vertical: "top", horizontal: "right" }}
+              anchorOrigin={{
+                vertical: "bottom",
+                horizontal: "right",
+              }}
+              transformOrigin={{
+                vertical: "top",
+                horizontal: "right",
+              }}
               slotProps={{
                 paper: {
                   sx: {
@@ -411,6 +440,7 @@ export default function AppLayout({ children }) {
                   <Typography fontWeight={700}>
                     Notifications
                   </Typography>
+
                   <Typography variant="caption" color="text.secondary">
                     High-priority unresolved bugs
                   </Typography>
@@ -420,20 +450,26 @@ export default function AppLayout({ children }) {
                   <Button
                     size="small"
                     onClick={markAllNotificationsRead}
-                    sx={{ textTransform: "none", whiteSpace: "nowrap" }}
+                    sx={{
+                      textTransform: "none",
+                      whiteSpace: "nowrap",
+                    }}
                   >
                     Mark all read
                   </Button>
                 )}
               </Box>
 
-              <Divider sx={{ borderColor: "var(--border, #303039)" }} />
+              <Divider
+                sx={{ borderColor: "var(--border, #303039)" }}
+              />
 
               {notificationError ? (
                 <Box sx={{ p: 2 }}>
                   <Typography variant="body2">
                     Notifications couldn't be loaded.
                   </Typography>
+
                   <Typography variant="caption" color="text.secondary">
                     Check your connection and reopen this menu.
                   </Typography>
@@ -441,11 +477,17 @@ export default function AppLayout({ children }) {
               ) : notifications.length === 0 ? (
                 <Box sx={{ p: 3, textAlign: "center" }}>
                   <NotificationsNoneRoundedIcon
-                    sx={{ fontSize: 34, color: "text.secondary", mb: 1 }}
+                    sx={{
+                      fontSize: 34,
+                      color: "text.secondary",
+                      mb: 1,
+                    }}
                   />
+
                   <Typography fontWeight={600}>
                     You're all caught up
                   </Typography>
+
                   <Typography variant="body2" color="text.secondary">
                     No high-priority unresolved bugs found.
                   </Typography>
@@ -459,7 +501,7 @@ export default function AppLayout({ children }) {
                   return (
                     <MenuItem
                       key={notification.id}
-                      onClick={() => openNotification(notification)}
+                      onClick={openNotification}
                       sx={{
                         whiteSpace: "normal",
                         alignItems: "flex-start",
@@ -470,10 +512,13 @@ export default function AppLayout({ children }) {
                           : "transparent",
                       }}
                     >
-                      {notification.severity.toLowerCase() === "critical" ? (
+                      {String(notification.severity).toLowerCase() ===
+                      "critical" ? (
                         <PriorityHighRoundedIcon color="error" />
                       ) : (
-                        <BugReportOutlinedIcon sx={{ color: "#e6a23c" }} />
+                        <BugReportOutlinedIcon
+                          sx={{ color: "#e6a23c" }}
+                        />
                       )}
 
                       <Box sx={{ flex: 1, minWidth: 0 }}>
@@ -483,6 +528,7 @@ export default function AppLayout({ children }) {
                         >
                           {notification.title}
                         </Typography>
+
                         <Typography
                           variant="caption"
                           color="text.secondary"
@@ -511,7 +557,9 @@ export default function AppLayout({ children }) {
                 })
               )}
 
-              <Divider sx={{ borderColor: "var(--border, #303039)" }} />
+              <Divider
+                sx={{ borderColor: "var(--border, #303039)" }}
+              />
 
               <Box sx={{ p: 1 }}>
                 <Button
@@ -567,4 +615,6 @@ export default function AppLayout({ children }) {
     </Box>
   );
 }
+
+export default AppLayout;
 ```
