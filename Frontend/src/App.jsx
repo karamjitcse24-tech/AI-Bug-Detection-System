@@ -5,6 +5,7 @@ import Dashboard from "./pages/Dashboard";
 import Bugs from "./pages/Bugs";
 import Reports from "./pages/Reports";
 import Tasks from "./pages/Tasks";
+import Team from "./pages/Team";
 import Login from "./pages/Login";
 import Signup from "./pages/Signup";
 import AppLayout from "./components/AppLayout";
@@ -39,6 +40,7 @@ function App() {
   return (
     <BrowserRouter>
       <Routes>
+        {/* Default route */}
         <Route
           path="/"
           element={<Navigate to="/dashboard" replace />}
@@ -68,7 +70,7 @@ function App() {
           }
         />
 
-        {/* Reports & Analytics */}
+        {/* Reports and Analytics */}
         <Route
           path="/reports"
           element={
@@ -93,15 +95,12 @@ function App() {
           path="/team"
           element={
             <ProtectedRoute>
-              <ComingSoon
-                title="Team Project"
-                description="View project activity, assignments, and workload."
-              />
+              <Team />
             </ProtectedRoute>
           }
         />
 
-        {/* Profile */}
+        {/* Profile and Settings */}
         <Route
           path="/profile"
           element={
