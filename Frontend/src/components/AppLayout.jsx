@@ -1,4 +1,4 @@
-
+```jsx
 import { useEffect, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 
@@ -31,6 +31,15 @@ const pageNames = {
   "/profile": "Profile",
 };
 
+function getSavedTheme() {
+  try {
+    const theme = localStorage.getItem("theme");
+    return theme === "light" || theme === "dark" ? theme : "dark";
+  } catch {
+    return "dark";
+  }
+}
+
 export default function AppLayout({ children }) {
   const location = useLocation();
   const navigate = useNavigate();
@@ -45,20 +54,66 @@ export default function AppLayout({ children }) {
     }
   });
 
-  const [currentTheme, setCurrentTheme] = useState(
-    () => localStorage.getItem("theme") || "dark"
-  );
+  const [currentTheme, setCurrentTheme] = useState(getSavedTheme);
 
-  // Apply the theme immediately and persist the user's preference.
+  // Apply the theme to the whole document.
   useEffect(() => {
-    document.documentElement.dataset.theme = currentTheme;
-    document.documentElement.style.colorScheme = currentTheme;
-    localStorage.setItem("theme", currentTheme);
-  }, [currentTheme]);
+    const applyTheme = (theme) => {
+      const validTheme =
+        theme === "light" || theme === "dark" ? theme : "dark";
+
+      document.documentElement.dataset.theme = validTheme;
+      document.documentElement.style.colorScheme = validTheme;
+
+      setCurrentTheme((previousTheme) =>
+        previousTheme === validTheme ? previousTheme : validTheme
+      );
+    };
+
+    applyTheme(getSavedTheme());
+
+    // Listen for theme changes made elsewhere in this tab.
+    const handleThemeChange = (event) => {
+      applyTheme(event.detail);
+    };
+
+    // Listen for changes made in another browser tab.
+    const handleStorageChange = (event) => {
+      if (event.key === "theme") {
+        applyTheme(event.newValue);
+      }
+    };
+
+    window.addEventListener("bugmanager-theme-change", handleThemeChange);
+    window.addEventListener("storage", handleStorageChange);
+
+    return () => {
+      window.removeEventListener(
+        "bugmanager-theme-change",
+        handleThemeChange
+      );
+      window.removeEventListener("storage", handleStorageChange);
+    };
+  }, []);
 
   const toggleTheme = () => {
-    setCurrentTheme((previousTheme) =>
-      previousTheme === "dark" ? "light" : "dark"
+    const nextTheme = currentTheme === "dark" ? "light" : "dark";
+
+    try {
+      localStorage.setItem("theme", nextTheme);
+    } catch {
+      // The current page can still change theme if storage is unavailable.
+    }
+
+    document.documentElement.dataset.theme = nextTheme;
+    document.documentElement.style.colorScheme = nextTheme;
+
+    setCurrentTheme(nextTheme);
+
+    window.dispatchEvent(
+      new CustomEvent("bugmanager-theme-change", {
+        detail: nextTheme,
+      })
     );
   };
 
@@ -73,8 +128,9 @@ export default function AppLayout({ children }) {
         minHeight: "100vh",
         display: "flex",
         width: "100%",
-        background: "var(--bg, #111216)",
+        backgroundColor: "var(--bg, #111216)",
         color: "var(--text-h, #f5f5f5)",
+        transition: "background-color 180ms ease, color 180ms ease",
       }}
     >
       <Sidebar />
@@ -90,10 +146,10 @@ export default function AppLayout({ children }) {
           position="sticky"
           elevation={0}
           sx={{
-            background: "var(--surface, #17171c)",
+            backgroundColor: "var(--surface, #17171c)",
             color: "var(--text-h, #f5f5f5)",
             borderBottom: "1px solid var(--border, #303039)",
-            transition: "background 180ms ease, color 180ms ease",
+            transition: "background-color 180ms ease, color 180ms ease",
           }}
         >
           <Toolbar
@@ -103,7 +159,6 @@ export default function AppLayout({ children }) {
               gap: { xs: 0.75, sm: 1.5 },
             }}
           >
-            {/* Breadcrumb */}
             <Breadcrumbs
               separator="/"
               aria-label="breadcrumb"
@@ -137,7 +192,6 @@ export default function AppLayout({ children }) {
               </Typography>
             </Breadcrumbs>
 
-            {/* Search field */}
             <TextField
               size="small"
               placeholder="Search bugs..."
@@ -150,8 +204,8 @@ export default function AppLayout({ children }) {
                 width: { xs: 115, sm: 180, md: 225 },
                 "& .MuiOutlinedInput-root": {
                   borderRadius: 3,
-                  color: "inherit",
-                  background: "var(--surface-secondary, #222229)",
+                  color: "var(--text-h, #f5f5f5)",
+                  backgroundColor: "var(--surface-secondary, #222229)",
                   fontSize: 13,
                   "& fieldset": {
                     borderColor: "var(--border, #303039)",
@@ -163,13 +217,20 @@ export default function AppLayout({ children }) {
                     borderColor: "#35c6d2",
                   },
                 },
+                "& .MuiInputBase-input::placeholder": {
+                  color: "var(--text-muted, #9999a5)",
+                  opacity: 1,
+                },
               }}
               slotProps={{
                 input: {
                   startAdornment: (
                     <InputAdornment position="start">
                       <SearchRoundedIcon
-                        sx={{ fontSize: 19, color: "text.secondary" }}
+                        sx={{
+                          fontSize: 19,
+                          color: "var(--text-muted, #9999a5)",
+                        }}
                       />
                     </InputAdornment>
                   ),
@@ -177,7 +238,6 @@ export default function AppLayout({ children }) {
               }}
             />
 
-            {/* Working theme toggle */}
             <Tooltip
               title={
                 currentTheme === "dark"
@@ -205,7 +265,6 @@ export default function AppLayout({ children }) {
               </IconButton>
             </Tooltip>
 
-            {/* Notifications placeholder */}
             <Tooltip title="Notifications">
               <IconButton
                 aria-label="Notifications"
@@ -215,7 +274,6 @@ export default function AppLayout({ children }) {
               </IconButton>
             </Tooltip>
 
-            {/* Profile shortcut */}
             <Tooltip title={user?.name || user?.email || "Profile"}>
               <IconButton
                 onClick={() => navigate("/profile")}
@@ -239,14 +297,15 @@ export default function AppLayout({ children }) {
           </Toolbar>
         </AppBar>
 
-        {/* Current page content */}
         <Box
+          component="main"
           sx={{
             width: "100%",
             minWidth: 0,
             minHeight: "calc(100vh - 64px)",
-            background: "var(--bg, #111216)",
-            transition: "background 180ms ease",
+            backgroundColor: "var(--bg, #111216)",
+            color: "var(--text-h, #f5f5f5)",
+            transition: "background-color 180ms ease, color 180ms ease",
           }}
         >
           {children}
@@ -255,3 +314,4 @@ export default function AppLayout({ children }) {
     </Box>
   );
 }
+```
