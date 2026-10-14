@@ -4,6 +4,7 @@ import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import Dashboard from "./pages/Dashboard";
 import Bugs from "./pages/Bugs";
 import Reports from "./pages/Reports";
+import Tasks from "./pages/Tasks";
 import Login from "./pages/Login";
 import Signup from "./pages/Signup";
 import AppLayout from "./components/AppLayout";
@@ -38,11 +39,16 @@ function App() {
   return (
     <BrowserRouter>
       <Routes>
-        <Route path="/" element={<Navigate to="/dashboard" replace />} />
+        <Route
+          path="/"
+          element={<Navigate to="/dashboard" replace />}
+        />
 
+        {/* Authentication */}
         <Route path="/login" element={<Login />} />
         <Route path="/signup" element={<Signup />} />
 
+        {/* Dashboard */}
         <Route
           path="/dashboard"
           element={
@@ -52,6 +58,7 @@ function App() {
           }
         />
 
+        {/* Bug Management */}
         <Route
           path="/bugs"
           element={
@@ -61,6 +68,7 @@ function App() {
           }
         />
 
+        {/* Reports & Analytics */}
         <Route
           path="/reports"
           element={
@@ -70,18 +78,17 @@ function App() {
           }
         />
 
+        {/* Task Management */}
         <Route
           path="/tasks"
           element={
             <ProtectedRoute>
-              <ComingSoon
-                title="Tasks"
-                description="Organize bug-fixing work and track task progress."
-              />
+              <Tasks />
             </ProtectedRoute>
           }
         />
 
+        {/* Team Project */}
         <Route
           path="/team"
           element={
@@ -94,6 +101,7 @@ function App() {
           }
         />
 
+        {/* Profile */}
         <Route
           path="/profile"
           element={
@@ -106,7 +114,11 @@ function App() {
           }
         />
 
-        <Route path="*" element={<Navigate to="/dashboard" replace />} />
+        {/* Unknown routes */}
+        <Route
+          path="*"
+          element={<Navigate to="/dashboard" replace />}
+        />
       </Routes>
     </BrowserRouter>
   );
