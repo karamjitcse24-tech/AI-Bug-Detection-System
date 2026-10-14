@@ -3,12 +3,11 @@ import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 
 import Dashboard from "./pages/Dashboard";
 import Bugs from "./pages/Bugs";
+import Reports from "./pages/Reports";
 import Login from "./pages/Login";
 import Signup from "./pages/Signup";
-
 import AppLayout from "./components/AppLayout";
 
-// Protect application pages using the existing JWT token.
 function ProtectedRoute({ children }) {
   const token = sessionStorage.getItem("token");
 
@@ -19,35 +18,19 @@ function ProtectedRoute({ children }) {
   return <AppLayout>{children}</AppLayout>;
 }
 
-// Temporary page until the full section is implemented.
 function ComingSoon({ title, description }) {
   return (
-    <main
+    <div
       style={{
-        minHeight: "70vh",
         padding: "32px",
-        boxSizing: "border-box",
-        background: "var(--bg, #111216)",
-        color: "var(--text-h, #f5f5f5)",
+        color: "var(--text, #f3f4f6)",
       }}
     >
-      <p style={{ color: "#35c6d2", fontWeight: 700 }}>
-        BUGMANAGER
-      </p>
-
       <h1>{title}</h1>
-
-      <p
-        style={{
-          color: "var(--text, #a0a0a0)",
-          lineHeight: 1.7,
-        }}
-      >
+      <p style={{ color: "var(--text-secondary, #a1a1aa)" }}>
         {description}
       </p>
-
-      <p>This section will be developed in a later step.</p>
-    </main>
+    </div>
   );
 }
 
@@ -55,17 +38,11 @@ function App() {
   return (
     <BrowserRouter>
       <Routes>
-        {/* Default route */}
-        <Route
-          path="/"
-          element={<Navigate to="/dashboard" replace />}
-        />
+        <Route path="/" element={<Navigate to="/dashboard" replace />} />
 
-        {/* Public authentication routes */}
         <Route path="/login" element={<Login />} />
         <Route path="/signup" element={<Signup />} />
 
-        {/* Dashboard */}
         <Route
           path="/dashboard"
           element={
@@ -75,7 +52,6 @@ function App() {
           }
         />
 
-        {/* Bug management */}
         <Route
           path="/bugs"
           element={
@@ -85,20 +61,15 @@ function App() {
           }
         />
 
-        {/* Reports */}
         <Route
           path="/reports"
           element={
             <ProtectedRoute>
-              <ComingSoon
-                title="Reports & Analytics"
-                description="Review bug trends, severity distributions, and resolution statistics."
-              />
+              <Reports />
             </ProtectedRoute>
           }
         />
 
-        {/* Tasks */}
         <Route
           path="/tasks"
           element={
@@ -111,7 +82,6 @@ function App() {
           }
         />
 
-        {/* Team project */}
         <Route
           path="/team"
           element={
@@ -124,7 +94,6 @@ function App() {
           }
         />
 
-        {/* Profile */}
         <Route
           path="/profile"
           element={
@@ -137,11 +106,7 @@ function App() {
           }
         />
 
-        {/* Unknown routes */}
-        <Route
-          path="*"
-          element={<Navigate to="/dashboard" replace />}
-        />
+        <Route path="*" element={<Navigate to="/dashboard" replace />} />
       </Routes>
     </BrowserRouter>
   );
