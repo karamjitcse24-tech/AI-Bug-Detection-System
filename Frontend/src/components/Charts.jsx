@@ -1,3 +1,4 @@
+
 import {
   PieChart,
   Pie,
@@ -14,33 +15,25 @@ import {
 
 import { Box, Paper, Typography } from "@mui/material";
 
-function Charts({ bugs }) {
+function Charts({ bugs = [] }) {
   // ================= SEVERITY DATA =================
 
   const severityData = [
     {
       name: "Critical",
-      value: bugs.filter(
-        (bug) => bug.severity === "Critical"
-      ).length,
+      value: bugs.filter((bug) => bug.severity === "Critical").length,
     },
     {
       name: "High",
-      value: bugs.filter(
-        (bug) => bug.severity === "High"
-      ).length,
+      value: bugs.filter((bug) => bug.severity === "High").length,
     },
     {
       name: "Medium",
-      value: bugs.filter(
-        (bug) => bug.severity === "Medium"
-      ).length,
+      value: bugs.filter((bug) => bug.severity === "Medium").length,
     },
     {
       name: "Low",
-      value: bugs.filter(
-        (bug) => bug.severity === "Low"
-      ).length,
+      value: bugs.filter((bug) => bug.severity === "Low").length,
     },
   ];
 
@@ -49,38 +42,71 @@ function Charts({ bugs }) {
   const statusData = [
     {
       name: "Open",
-      value: bugs.filter(
-        (bug) => bug.status === "Open"
-      ).length,
+      value: bugs.filter((bug) => bug.status === "Open").length,
     },
     {
       name: "In Progress",
-      value: bugs.filter(
-        (bug) => bug.status === "In Progress"
-      ).length,
+      value: bugs.filter((bug) => bug.status === "In Progress").length,
     },
     {
       name: "Resolved",
-      value: bugs.filter(
-        (bug) => bug.status === "Resolved"
-      ).length,
+      value: bugs.filter((bug) => bug.status === "Resolved").length,
     },
     {
       name: "Closed",
-      value: bugs.filter(
-        (bug) => bug.status === "Closed"
-      ).length,
+      value: bugs.filter((bug) => bug.status === "Closed").length,
     },
   ];
 
-  // ================= SEVERITY COLORS =================
+  // ================= CHART COLORS =================
 
-  const SEVERITY_COLORS = [
-    "#8e24aa", // Critical - Purple
-    "#e53935", // High - Red
-    "#fb8c00", // Medium - Orange
-    "#43a047", // Low - Green
+  const severityColors = [
+    "#C084FC", // Critical
+    "#F87171", // High
+    "#FBBF24", // Medium
+    "#34D399", // Low
   ];
+
+  const statusBarColor = "var(--accent, #22D3C5)";
+
+  // ================= THEME-AWARE CHART STYLES =================
+
+  const chartPaperStyle = {
+    p: { xs: 2, sm: 3 },
+    borderRadius: 3,
+    minHeight: 390,
+    width: "100%",
+    boxSizing: "border-box",
+    backgroundColor: "var(--surface)",
+    color: "var(--text-h)",
+    border: "1px solid var(--border)",
+    boxShadow: "var(--shadow)",
+    transition:
+      "background-color 0.25s ease, color 0.25s ease, border-color 0.25s ease",
+  };
+
+  const axisColor = "var(--text)";
+  const gridColor = "var(--border)";
+
+  const tooltipStyle = {
+    contentStyle: {
+      backgroundColor: "var(--surface)",
+      border: "1px solid var(--border)",
+      borderRadius: "8px",
+      color: "var(--text-h)",
+    },
+    labelStyle: {
+      color: "var(--text-h)",
+    },
+    itemStyle: {
+      color: "var(--text)",
+    },
+  };
+
+  const legendStyle = {
+    color: "var(--text)",
+    fontSize: 13,
+  };
 
   return (
     <Box
@@ -97,22 +123,14 @@ function Charts({ bugs }) {
     >
       {/* ================= BUG SEVERITY CHART ================= */}
 
-      <Paper
-        elevation={4}
-        sx={{
-          p: 3,
-          borderRadius: 3,
-          minHeight: 390,
-          width: "100%",
-          boxSizing: "border-box",
-        }}
-      >
+      <Paper elevation={0} sx={chartPaperStyle}>
         <Typography
           variant="h6"
           align="center"
           fontWeight="bold"
           sx={{
             mb: 1,
+            color: "var(--text-h)",
           }}
         >
           Bug Severity
@@ -121,24 +139,16 @@ function Charts({ bugs }) {
         <Typography
           variant="body2"
           align="center"
-          color="text.secondary"
           sx={{
             mb: 1,
+            color: "var(--text)",
           }}
         >
           Distribution of bugs by severity
         </Typography>
 
-        <Box
-          sx={{
-            width: "100%",
-            height: 300,
-          }}
-        >
-          <ResponsiveContainer
-            width="100%"
-            height="100%"
-          >
+        <Box sx={{ width: "100%", height: 300 }}>
+          <ResponsiveContainer width="100%" height="100%">
             <PieChart>
               <Pie
                 data={severityData}
@@ -152,22 +162,24 @@ function Charts({ bugs }) {
                 label={({ name, value }) =>
                   value > 0 ? `${name}: ${value}` : ""
                 }
+                labelLine={{ stroke: axisColor }}
               >
-                {severityData.map(
-                  (entry, index) => (
-                    <Cell
-                      key={`severity-${index}`}
-                      fill={SEVERITY_COLORS[index]}
-                    />
-                  )
-                )}
+                {severityData.map((entry, index) => (
+                  <Cell
+                    key={`severity-${index}`}
+                    fill={severityColors[index]}
+                    stroke="var(--surface)"
+                    strokeWidth={2}
+                  />
+                ))}
               </Pie>
 
-              <Tooltip />
+              <Tooltip {...tooltipStyle} />
 
               <Legend
                 verticalAlign="bottom"
                 height={36}
+                wrapperStyle={legendStyle}
               />
             </PieChart>
           </ResponsiveContainer>
@@ -176,22 +188,14 @@ function Charts({ bugs }) {
 
       {/* ================= BUG STATUS CHART ================= */}
 
-      <Paper
-        elevation={4}
-        sx={{
-          p: 3,
-          borderRadius: 3,
-          minHeight: 390,
-          width: "100%",
-          boxSizing: "border-box",
-        }}
-      >
+      <Paper elevation={0} sx={chartPaperStyle}>
         <Typography
           variant="h6"
           align="center"
           fontWeight="bold"
           sx={{
             mb: 1,
+            color: "var(--text-h)",
           }}
         >
           Bug Status
@@ -200,57 +204,54 @@ function Charts({ bugs }) {
         <Typography
           variant="body2"
           align="center"
-          color="text.secondary"
           sx={{
             mb: 1,
+            color: "var(--text)",
           }}
         >
           Current status of reported bugs
         </Typography>
 
-        <Box
-          sx={{
-            width: "100%",
-            height: 300,
-          }}
-        >
-          <ResponsiveContainer
-            width="100%"
-            height="100%"
-          >
+        <Box sx={{ width: "100%", height: 300 }}>
+          <ResponsiveContainer width="100%" height="100%">
             <BarChart
               data={statusData}
               margin={{
                 top: 20,
-                right: 30,
-                left: 10,
+                right: 20,
+                left: 5,
                 bottom: 10,
               }}
             >
               <CartesianGrid
                 strokeDasharray="3 3"
+                stroke={gridColor}
               />
 
               <XAxis
                 dataKey="name"
-                tick={{ fontSize: 14 }}
+                tick={{ fontSize: 12, fill: axisColor }}
+                tickLine={{ stroke: gridColor }}
+                axisLine={{ stroke: gridColor }}
               />
 
               <YAxis
                 allowDecimals={false}
-                tick={{ fontSize: 14 }}
+                tick={{ fontSize: 12, fill: axisColor }}
+                tickLine={{ stroke: gridColor }}
+                axisLine={{ stroke: gridColor }}
               />
 
-              <Tooltip />
+              <Tooltip {...tooltipStyle} />
 
-              <Legend />
+              <Legend wrapperStyle={legendStyle} />
 
               <Bar
                 dataKey="value"
                 name="Number of Bugs"
-                fill="#1976d2"
+                fill={statusBarColor}
                 radius={[8, 8, 0, 0]}
-                barSize={50}
+                barSize={42}
               />
             </BarChart>
           </ResponsiveContainer>
