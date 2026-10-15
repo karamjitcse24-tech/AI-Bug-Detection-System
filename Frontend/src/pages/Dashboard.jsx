@@ -9,17 +9,14 @@ import BugTable from "../components/BugTable";
 import SearchFilter from "../components/SearchFilter";
 import Charts from "../components/Charts";
 
-import {
-  getAllBugs,
-  deleteBug,
-} from "../services/bugService";
+import { getAllBugs, deleteBug } from "../services/bugService";
 
 function Dashboard() {
   const navigate = useNavigate();
 
   // ================= USER PROFILE =================
 
-  const [user, setUser] = useState(() => {
+  const [user] = useState(() => {
     try {
       return JSON.parse(sessionStorage.getItem("user") || "null");
     } catch {
@@ -61,13 +58,9 @@ function Dashboard() {
     try {
       const response = await getAllBugs();
 
-      console.log("API Response:", response.data);
+      const data = response?.data;
 
-      setBugs(
-        Array.isArray(response.data)
-          ? response.data
-          : []
-      );
+      setBugs(Array.isArray(data) ? data : []);
     } catch (error) {
       console.error("Error loading bugs:", error);
       setBugs([]);
@@ -107,13 +100,13 @@ function Dashboard() {
   // ================= FILTER BUGS =================
 
   const filteredBugs = bugs.filter((bug) => {
-    const title = bug.title || "";
-    const bugSeverity = bug.severity || "";
-    const bugStatus = bug.status || "";
+    const title = String(bug?.title || "");
+    const bugSeverity = String(bug?.severity || "");
+    const bugStatus = String(bug?.status || "");
 
     const matchesSearch = title
       .toLowerCase()
-      .includes(search.toLowerCase());
+      .includes(search.toLowerCase().trim());
 
     const matchesSeverity =
       severity === "" || bugSeverity === severity;
@@ -121,11 +114,7 @@ function Dashboard() {
     const matchesStatus =
       status === "" || bugStatus === status;
 
-    return (
-      matchesSearch &&
-      matchesSeverity &&
-      matchesStatus
-    );
+    return matchesSearch && matchesSeverity && matchesStatus;
   });
 
   // ================= CLEAR FILTERS =================
@@ -137,9 +126,7 @@ function Dashboard() {
   };
 
   const filtersApplied =
-    search !== "" ||
-    severity !== "" ||
-    status !== "";
+    search.trim() !== "" || severity !== "" || status !== "";
 
   // ================= USER DISPLAY =================
 
@@ -161,6 +148,7 @@ function Dashboard() {
           margin: "0 auto",
           padding: "20px 30px 50px",
           boxSizing: "border-box",
+          color: "var(--text)",
         }}
       >
         {/* ================= WELCOME HEADER ================= */}
@@ -175,16 +163,19 @@ function Dashboard() {
             padding: "25px 28px",
             marginBottom: "25px",
             borderRadius: "14px",
-            background:
-              "linear-gradient(135deg, #eff6ff 0%, #f5f3ff 100%)",
-            border: "1px solid #e0e7ff",
+            background: "var(--surface)",
+            border: "1px solid var(--border)",
+            boxShadow: "var(--shadow)",
+            color: "var(--text)",
+            transition:
+              "background-color 0.25s ease, border-color 0.25s ease",
           }}
         >
           <div>
             <p
               style={{
                 margin: "0 0 8px",
-                color: "#4f46e5",
+                color: "var(--accent)",
                 fontSize: "13px",
                 fontWeight: "700",
                 letterSpacing: "1px",
@@ -197,7 +188,7 @@ function Dashboard() {
             <h1
               style={{
                 margin: "0 0 8px",
-                color: "#111827",
+                color: "var(--text-h)",
                 fontSize: "clamp(24px, 3vw, 32px)",
                 fontWeight: "800",
               }}
@@ -208,7 +199,7 @@ function Dashboard() {
             <p
               style={{
                 margin: 0,
-                color: "#6b7280",
+                color: "var(--text)",
                 fontSize: "14px",
               }}
             >
@@ -219,7 +210,7 @@ function Dashboard() {
               <p
                 style={{
                   margin: "10px 0 0",
-                  color: "#4b5563",
+                  color: "var(--text)",
                   fontSize: "13px",
                 }}
               >
@@ -241,6 +232,7 @@ function Dashboard() {
               fontWeight: "600",
               cursor: "pointer",
               whiteSpace: "nowrap",
+              transition: "background-color 0.2s ease",
             }}
             onMouseOver={(event) => {
               event.currentTarget.style.background = "#b91c1c";
@@ -305,6 +297,7 @@ function Dashboard() {
                   margin: 0,
                   fontSize: "26px",
                   fontWeight: "700",
+                  color: "var(--text-h)",
                 }}
               >
                 Bug Reports
@@ -313,7 +306,7 @@ function Dashboard() {
               <p
                 style={{
                   margin: "5px 0 0",
-                  color: "#777",
+                  color: "var(--text-muted, var(--text))",
                   fontSize: "14px",
                 }}
               >
@@ -325,6 +318,7 @@ function Dashboard() {
               style={{
                 fontSize: "14px",
                 fontWeight: "600",
+                color: "var(--text-h)",
               }}
             >
               Showing {filteredBugs.length} of {bugs.length} bugs
@@ -339,11 +333,14 @@ function Dashboard() {
                 display: "flex",
                 alignItems: "center",
                 justifyContent: "space-between",
+                flexWrap: "wrap",
                 gap: "10px",
                 padding: "10px 15px",
                 marginBottom: "15px",
                 borderRadius: "8px",
-                background: "#f5f5f5",
+                background: "var(--surface-secondary)",
+                color: "var(--text-h)",
+                border: "1px solid var(--border)",
                 fontSize: "14px",
               }}
             >
@@ -355,6 +352,7 @@ function Dashboard() {
                 style={{
                   border: "none",
                   background: "transparent",
+                  color: "var(--accent)",
                   cursor: "pointer",
                   fontWeight: "bold",
                   fontSize: "14px",
@@ -379,8 +377,10 @@ function Dashboard() {
                 padding: "50px 20px",
                 textAlign: "center",
                 borderRadius: "10px",
-                background: "#fafafa",
-                border: "1px solid #e0e0e0",
+                background: "var(--surface)",
+                border: "1px solid var(--border)",
+                color: "var(--text-h)",
+                boxShadow: "var(--shadow)",
               }}
             >
               <div
@@ -392,11 +392,21 @@ function Dashboard() {
                 🐞
               </div>
 
-              <h3 style={{ margin: "0 0 8px" }}>
+              <h3
+                style={{
+                  margin: "0 0 8px",
+                  color: "var(--text-h)",
+                }}
+              >
                 No Bugs Found
               </h3>
 
-              <p style={{ margin: 0, color: "#777" }}>
+              <p
+                style={{
+                  margin: 0,
+                  color: "var(--text)",
+                }}
+              >
                 Try changing your search or filter options.
               </p>
             </div>
