@@ -1,3 +1,4 @@
+
 import {
   Grid,
   Card,
@@ -11,7 +12,7 @@ import ErrorIcon from "@mui/icons-material/Error";
 import CheckCircleIcon from "@mui/icons-material/CheckCircle";
 import WarningIcon from "@mui/icons-material/Warning";
 
-function DashboardCards({ bugs }) {
+function DashboardCards({ bugs = [] }) {
   // ================= STATISTICS =================
 
   const total = bugs.length;
@@ -61,35 +62,31 @@ function DashboardCards({ bugs }) {
     <Grid
       container
       spacing={2.5}
-      sx={{
-        mb: 4,
-      }}
+      sx={{ mb: 4 }}
     >
-      {cards.map((card, index) => (
+      {cards.map((card) => (
         <Grid
-          size={{
-            xs: 12,
-            sm: 6,
-            md: 3,
-          }}
-          key={index}
+          size={{ xs: 12, sm: 6, md: 3 }}
+          key={card.title}
         >
           <Card
-            elevation={5}
+            elevation={0}
             sx={{
               height: "100%",
               minHeight: 145,
-              backgroundColor: card.color,
-              color: "white",
+              backgroundColor: "var(--surface)",
+              color: "var(--text-h)",
+              border: "1px solid var(--border)",
+              borderTop: `4px solid ${card.color}`,
               borderRadius: 3,
               overflow: "hidden",
-
+              boxShadow: "var(--shadow)",
               transition:
-                "transform 0.2s ease, box-shadow 0.2s ease",
+                "transform 0.2s ease, box-shadow 0.2s ease, background-color 0.2s ease",
 
               "&:hover": {
                 transform: "translateY(-5px)",
-                boxShadow: 9,
+                boxShadow: "0 12px 28px rgba(0, 0, 0, 0.14)",
               },
             }}
           >
@@ -113,6 +110,7 @@ function DashboardCards({ bugs }) {
                   alignItems: "center",
                   justifyContent: "center",
                   mb: 1,
+                  color: card.color,
                 }}
               >
                 {card.icon}
@@ -126,6 +124,7 @@ function DashboardCards({ bugs }) {
                   fontWeight: 600,
                   fontSize: "16px",
                   mb: 0.5,
+                  color: "var(--text)",
                 }}
               >
                 {card.title}
@@ -138,6 +137,7 @@ function DashboardCards({ bugs }) {
                   fontSize: "34px",
                   lineHeight: 1,
                   fontWeight: 800,
+                  color: "var(--text-h)",
                 }}
               >
                 {card.value}
