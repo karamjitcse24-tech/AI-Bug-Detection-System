@@ -593,4 +593,3 @@ title: bug?.title || ("Bug #" + getBugId(bug)),
 }
 
 export default AppLayout;
-```
