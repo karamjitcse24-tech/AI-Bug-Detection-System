@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { DataGrid } from "@mui/x-data-grid";
 
@@ -14,13 +15,11 @@ import {
   useMediaQuery,
 } from "@mui/material";
 
-function BugTable({ bugs, onEdit, onDelete }) {
+function BugTable({ bugs = [], onEdit, onDelete }) {
   const [selectedBug, setSelectedBug] = useState(null);
 
   // Detect smaller screens
-  const isSmallScreen = useMediaQuery(
-    "(max-width:900px)"
-  );
+  const isSmallScreen = useMediaQuery("(max-width:900px)");
 
   const handleAIAnalysis = (bug) => {
     setSelectedBug(bug);
@@ -39,13 +38,11 @@ function BugTable({ bugs, onEdit, onDelete }) {
       width: 55,
       sortable: true,
     },
-
     {
       field: "title",
       headerName: "Title",
       flex: 1,
       minWidth: 100,
-
       renderCell: (params) => (
         <Typography
           variant="body2"
@@ -54,6 +51,7 @@ function BugTable({ bugs, onEdit, onDelete }) {
             width: "100%",
             overflow: "hidden",
             textOverflow: "ellipsis",
+            color: "var(--text)",
           }}
         >
           {params.value}
@@ -69,7 +67,6 @@ function BugTable({ bugs, onEdit, onDelete }) {
             headerName: "Description",
             flex: 1.5,
             minWidth: 180,
-
             renderCell: (params) => (
               <Typography
                 variant="body2"
@@ -78,6 +75,7 @@ function BugTable({ bugs, onEdit, onDelete }) {
                   width: "100%",
                   overflow: "hidden",
                   textOverflow: "ellipsis",
+                  color: "var(--text)",
                 }}
               >
                 {params.value}
@@ -91,7 +89,6 @@ function BugTable({ bugs, onEdit, onDelete }) {
       field: "severity",
       headerName: "Severity",
       width: isSmallScreen ? 75 : 100,
-
       renderCell: (params) => {
         let color = "success";
 
@@ -106,31 +103,21 @@ function BugTable({ bugs, onEdit, onDelete }) {
             label={params.value}
             color={color}
             size="small"
-            sx={{
-              fontWeight: "bold",
-            }}
+            sx={{ fontWeight: "bold" }}
           />
         );
       },
     },
-
     {
       field: "status",
       headerName: "Status",
       width: isSmallScreen ? 70 : 90,
-
       renderCell: (params) => (
         <Chip
           label={params.value}
-          color={
-            params.value === "Open"
-              ? "primary"
-              : "success"
-          }
+          color={params.value === "Open" ? "primary" : "success"}
           size="small"
-          sx={{
-            fontWeight: "bold",
-          }}
+          sx={{ fontWeight: "bold" }}
         />
       ),
     },
@@ -142,23 +129,18 @@ function BugTable({ bugs, onEdit, onDelete }) {
       headerName: "AI Analysis",
       width: isSmallScreen ? 105 : 130,
       sortable: false,
-
       renderCell: (params) => (
         <Button
           variant="outlined"
           color="secondary"
           size="small"
-          onClick={() =>
-            handleAIAnalysis(params.row)
-          }
+          onClick={() => handleAIAnalysis(params.row)}
           sx={{
             borderRadius: 2,
             fontWeight: "bold",
             textTransform: "none",
             minWidth: isSmallScreen ? 95 : 115,
-            fontSize: isSmallScreen
-              ? "11px"
-              : "12px",
+            fontSize: isSmallScreen ? "11px" : "12px",
           }}
         >
           ✨ AI Analysis
@@ -173,7 +155,6 @@ function BugTable({ bugs, onEdit, onDelete }) {
       headerName: "Actions",
       width: isSmallScreen ? 120 : 150,
       sortable: false,
-
       renderCell: (params) => (
         <Box
           sx={{
@@ -185,15 +166,11 @@ function BugTable({ bugs, onEdit, onDelete }) {
           <Button
             variant="contained"
             size="small"
-            onClick={() =>
-              onEdit(params.row)
-            }
+            onClick={() => onEdit(params.row)}
             sx={{
               borderRadius: 2,
               textTransform: "none",
-              minWidth: isSmallScreen
-                ? 45
-                : 55,
+              minWidth: isSmallScreen ? 45 : 55,
               px: isSmallScreen ? 1 : 1.5,
               fontSize: "11px",
             }}
@@ -205,15 +182,11 @@ function BugTable({ bugs, onEdit, onDelete }) {
             variant="contained"
             color="error"
             size="small"
-            onClick={() =>
-              onDelete(params.row.id)
-            }
+            onClick={() => onDelete(params.row.id)}
             sx={{
               borderRadius: 2,
               textTransform: "none",
-              minWidth: isSmallScreen
-                ? 55
-                : 65,
+              minWidth: isSmallScreen ? 55 : 65,
               px: isSmallScreen ? 1 : 1.5,
               fontSize: "11px",
             }}
@@ -234,9 +207,12 @@ function BugTable({ bugs, onEdit, onDelete }) {
       <Box
         sx={{
           width: "100%",
-          backgroundColor: "white",
+          backgroundColor: "var(--surface)",
+          color: "var(--text)",
+          border: "1px solid var(--border)",
           borderRadius: 2,
           overflow: "hidden",
+          transition: "background-color 0.2s ease",
         }}
       >
         <DataGrid
@@ -250,19 +226,75 @@ function BugTable({ bugs, onEdit, onDelete }) {
           disableColumnMenu={isSmallScreen}
           sx={{
             border: "none",
+            color: "var(--text)",
+            backgroundColor: "var(--surface)",
 
             "& .MuiDataGrid-columnHeaders": {
               fontWeight: "bold",
-              backgroundColor: "#f5f5f5",
+              backgroundColor: "var(--surface-secondary)",
+              color: "var(--text-h)",
+              borderBottom: "1px solid var(--border)",
+            },
+
+            "& .MuiDataGrid-columnHeaderTitle": {
+              fontWeight: 700,
             },
 
             "& .MuiDataGrid-cell": {
               fontSize: "12px",
+              color: "var(--text)",
+              borderBottom: "1px solid var(--border)",
+            },
+
+            "& .MuiDataGrid-row": {
+              backgroundColor: "var(--surface)",
             },
 
             "& .MuiDataGrid-row:hover": {
-              backgroundColor: "#fafafa",
+              backgroundColor: "var(--surface-secondary)",
             },
+
+            "& .MuiDataGrid-row.Mui-selected": {
+              backgroundColor: "var(--accent-bg)",
+            },
+
+            "& .MuiDataGrid-row.Mui-selected:hover": {
+              backgroundColor: "var(--accent-bg)",
+            },
+
+            "& .MuiDataGrid-footerContainer": {
+              borderTop: "1px solid var(--border)",
+              color: "var(--text)",
+              backgroundColor: "var(--surface)",
+            },
+
+            "& .MuiTablePagination-root": {
+              color: "var(--text)",
+            },
+
+            "& .MuiTablePagination-selectIcon": {
+              color: "var(--text)",
+            },
+
+            "& .MuiDataGrid-iconButtonContainer, & .MuiDataGrid-sortIcon, & .MuiDataGrid-menuIconButton":
+              {
+                color: "var(--text)",
+              },
+
+            "& .MuiDataGrid-overlay": {
+              backgroundColor: "var(--surface)",
+              color: "var(--text)",
+            },
+
+            "& .MuiDataGrid-filler": {
+              backgroundColor: "var(--surface)",
+            },
+
+            "& .MuiDataGrid-scrollbar": {
+              scrollbarColor: "var(--border) var(--surface)",
+            },
+
+            transition: "background-color 0.2s ease",
           }}
           initialState={{
             pagination: {
@@ -274,35 +306,44 @@ function BugTable({ bugs, onEdit, onDelete }) {
         />
       </Box>
 
-      {/* ================================================= */}
-      {/* AI ANALYSIS DIALOG */}
-      {/* ================================================= */}
+      {/* ================= AI ANALYSIS DIALOG ================= */}
 
       <Dialog
         open={Boolean(selectedBug)}
         onClose={handleCloseAI}
         maxWidth="md"
         fullWidth
+        PaperProps={{
+          sx: {
+            backgroundColor: "var(--surface)",
+            color: "var(--text)",
+            border: "1px solid var(--border)",
+            borderRadius: 3,
+            boxShadow: "var(--shadow)",
+          },
+        }}
       >
         <DialogTitle
           sx={{
             fontWeight: "bold",
             fontSize: "24px",
+            color: "var(--text-h)",
+            borderBottom: "1px solid var(--border)",
           }}
         >
           ✨ AI Bug Analysis
         </DialogTitle>
 
-        <DialogContent>
+        <DialogContent sx={{ pt: 3 }}>
           {selectedBug && (
             <Box>
-
               {/* Bug Title */}
 
               <Typography
                 variant="h6"
                 fontWeight="bold"
                 gutterBottom
+                sx={{ color: "var(--text-h)" }}
               >
                 {selectedBug.title}
               </Typography>
@@ -313,7 +354,7 @@ function BugTable({ bugs, onEdit, onDelete }) {
                 <Typography
                   variant="body1"
                   fontWeight="bold"
-                  sx={{ mb: 1 }}
+                  sx={{ mb: 1, color: "var(--text-h)" }}
                 >
                   Detected Severity
                 </Typography>
@@ -321,21 +362,17 @@ function BugTable({ bugs, onEdit, onDelete }) {
                 <Chip
                   label={selectedBug.severity}
                   color={
-                    selectedBug.severity ===
-                    "High"
+                    selectedBug.severity === "High"
                       ? "error"
-                      : selectedBug.severity ===
-                        "Medium"
+                      : selectedBug.severity === "Medium"
                       ? "warning"
                       : "success"
                   }
-                  sx={{
-                    fontWeight: "bold",
-                  }}
+                  sx={{ fontWeight: "bold" }}
                 />
               </Box>
 
-              <Divider sx={{ my: 2 }} />
+              <Divider sx={{ my: 2, borderColor: "var(--border)" }} />
 
               {/* Bug Description */}
 
@@ -343,6 +380,7 @@ function BugTable({ bugs, onEdit, onDelete }) {
                 variant="body1"
                 fontWeight="bold"
                 gutterBottom
+                sx={{ color: "var(--text-h)" }}
               >
                 🐞 Bug Description
               </Typography>
@@ -351,14 +389,16 @@ function BugTable({ bugs, onEdit, onDelete }) {
                 variant="body2"
                 sx={{
                   mb: 3,
-                  color: "text.secondary",
+                  color: "var(--text)",
                   lineHeight: 1.6,
+                  whiteSpace: "pre-wrap",
+                  overflowWrap: "anywhere",
                 }}
               >
-                {selectedBug.description}
+                {selectedBug.description || "No description provided."}
               </Typography>
 
-              <Divider sx={{ my: 2 }} />
+              <Divider sx={{ my: 2, borderColor: "var(--border)" }} />
 
               {/* AI Reason */}
 
@@ -367,6 +407,7 @@ function BugTable({ bugs, onEdit, onDelete }) {
                 fontWeight="bold"
                 sx={{
                   mb: 1,
+                  color: "var(--text-h)",
                 }}
               >
                 💡 Why this severity?
@@ -377,13 +418,16 @@ function BugTable({ bugs, onEdit, onDelete }) {
                 sx={{
                   mb: 3,
                   lineHeight: 1.7,
+                  color: "var(--text)",
+                  whiteSpace: "pre-wrap",
+                  overflowWrap: "anywhere",
                 }}
               >
                 {selectedBug.aiReason ||
                   "AI analysis is not available for this bug."}
               </Typography>
 
-              <Divider sx={{ my: 2 }} />
+              <Divider sx={{ my: 2, borderColor: "var(--border)" }} />
 
               {/* AI Recommendation */}
 
@@ -392,6 +436,7 @@ function BugTable({ bugs, onEdit, onDelete }) {
                 fontWeight="bold"
                 sx={{
                   mb: 1,
+                  color: "var(--text-h)",
                 }}
               >
                 🔧 Recommended Action
@@ -401,6 +446,9 @@ function BugTable({ bugs, onEdit, onDelete }) {
                 variant="body1"
                 sx={{
                   lineHeight: 1.7,
+                  color: "var(--text)",
+                  whiteSpace: "pre-wrap",
+                  overflowWrap: "anywhere",
                 }}
               >
                 {selectedBug.aiRecommendation ||
@@ -410,7 +458,12 @@ function BugTable({ bugs, onEdit, onDelete }) {
           )}
         </DialogContent>
 
-        <DialogActions sx={{ p: 2 }}>
+        <DialogActions
+          sx={{
+            p: 2,
+            borderTop: "1px solid var(--border)",
+          }}
+        >
           <Button
             onClick={handleCloseAI}
             variant="contained"
@@ -418,6 +471,7 @@ function BugTable({ bugs, onEdit, onDelete }) {
             sx={{
               borderRadius: 2,
               px: 3,
+              textTransform: "none",
             }}
           >
             Close
