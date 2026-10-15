@@ -1,5 +1,6 @@
 
 import { useCallback, useEffect, useMemo, useState } from "react";
+
 import {
   Alert,
   Box,
@@ -36,6 +37,8 @@ export default function Bugs() {
   const [formOpen, setFormOpen] = useState(false);
   const [selectedBug, setSelectedBug] = useState(null);
 
+  // ================= LOAD BUGS =================
+
   const loadBugs = useCallback(async () => {
     setLoading(true);
     setError("");
@@ -65,6 +68,8 @@ export default function Bugs() {
     loadBugs();
   }, [loadBugs]);
 
+  // ================= SEARCH AND FILTERS =================
+
   const filteredBugs = useMemo(() => {
     const query = search.trim().toLowerCase();
 
@@ -82,7 +87,8 @@ export default function Bugs() {
 
       const matchesStatus =
         !status ||
-        String(bug.status || "").toLowerCase() === status.toLowerCase();
+        String(bug.status || "").toLowerCase() ===
+          status.toLowerCase();
 
       return matchesSearch && matchesSeverity && matchesStatus;
     });
@@ -93,6 +99,10 @@ export default function Bugs() {
     setSeverity("");
     setStatus("");
   };
+
+  const filtersApplied = Boolean(search.trim() || severity || status);
+
+  // ================= EDIT AND DELETE =================
 
   const handleEdit = (bug) => {
     setSelectedBug(bug);
@@ -110,6 +120,7 @@ export default function Bugs() {
       await loadBugs();
     } catch (err) {
       console.error("Failed to delete bug:", err);
+
       window.alert(
         err.response?.data?.message || "Unable to delete this bug."
       );
@@ -121,39 +132,122 @@ export default function Bugs() {
     setFormOpen(true);
   };
 
+  const closeForm = () => {
+    setFormOpen(false);
+    setSelectedBug(null);
+  };
+
+  // ================= THEME STYLES =================
+
   const panelSx = {
-    background: "var(--surface, #191a20)",
-    color: "var(--text-h, #f5f5f5)",
-    border: "1px solid var(--border, #303039)",
+    backgroundColor: "var(--surface)",
+    color: "var(--text)",
+    border: "1px solid var(--border)",
     borderRadius: 3,
-    boxShadow: "none",
+    boxShadow: "var(--shadow)",
+    transition:
+      "background-color 0.2s ease, color 0.2s ease, border-color 0.2s ease",
+  };
+
+  const headingSx = {
+    color: "var(--text-h)",
+    fontWeight: 800,
+  };
+
+  const secondaryTextSx = {
+    color: "var(--text)",
   };
 
   const inputSx = {
     minWidth: 0,
-    "& .MuiOutlinedInput-root": {
-      color: "var(--text-h, #f5f5f5)",
-      background: "var(--surface-secondary, #222229)",
-      borderRadius: 2,
-      "& fieldset": {
-        borderColor: "var(--border, #303039)",
-      },
-      "&:hover fieldset": {
-        borderColor: "#35c6d2",
-      },
-      "&.Mui-focused fieldset": {
-        borderColor: "#35c6d2",
-      },
-    },
+
     "& .MuiInputLabel-root": {
-      color: "var(--text, #a5a5b0)",
+      color: "var(--text)",
     },
+
+    "& .MuiInputLabel-root.Mui-focused": {
+      color: "var(--accent)",
+    },
+
+    "& .MuiOutlinedInput-root": {
+      color: "var(--text-h)",
+      backgroundColor: "var(--surface-secondary)",
+      borderRadius: 2,
+
+      "& fieldset": {
+        borderColor: "var(--border)",
+      },
+
+      "&:hover fieldset": {
+        borderColor: "var(--accent)",
+      },
+
+      "&.Mui-focused fieldset": {
+        borderColor: "var(--accent)",
+      },
+    },
+
     "& .MuiSvgIcon-root": {
-      color: "var(--text, #a5a5b0)",
+      color: "var(--text)",
+    },
+
+    "& .MuiInputBase-input::placeholder": {
+      color: "var(--text)",
+      opacity: 0.8,
     },
   };
 
-  const filtersApplied = Boolean(search.trim() || severity || status);
+  const menuProps = {
+    PaperProps: {
+      sx: {
+        backgroundColor: "var(--surface)",
+        color: "var(--text)",
+        border: "1px solid var(--border)",
+        boxShadow: "var(--shadow)",
+
+        "& .MuiMenuItem-root:hover": {
+          backgroundColor: "var(--surface-secondary)",
+        },
+
+        "& .MuiMenuItem-root.Mui-selected": {
+          backgroundColor: "var(--accent-bg)",
+        },
+
+        "& .MuiMenuItem-root.Mui-selected:hover": {
+          backgroundColor: "var(--accent-bg)",
+        },
+      },
+    },
+  };
+
+  const primaryButtonSx = {
+    borderRadius: 2,
+    textTransform: "none",
+    fontWeight: 700,
+    backgroundColor: "var(--accent)",
+    color: "var(--bg)",
+    boxShadow: "none",
+
+    "&:hover": {
+      backgroundColor: "var(--accent)",
+      filter: "brightness(1.08)",
+      boxShadow: "none",
+    },
+  };
+
+  const secondaryButtonSx = {
+    borderRadius: 2,
+    textTransform: "none",
+    color: "var(--text-h)",
+    borderColor: "var(--border)",
+
+    "&:hover": {
+      borderColor: "var(--accent)",
+      backgroundColor: "var(--accent-bg)",
+    },
+  };
+
+  // ================= PAGE =================
 
   return (
     <Box
@@ -165,9 +259,11 @@ export default function Bugs() {
         p: { xs: 2, sm: 3, md: 4 },
         boxSizing: "border-box",
         minWidth: 0,
+        color: "var(--text)",
       }}
     >
-      {/* Page header */}
+      {/* PAGE HEADER */}
+
       <Box
         sx={{
           display: "flex",
@@ -182,6 +278,7 @@ export default function Bugs() {
           <Typography
             variant="h4"
             sx={{
+              ...headingSx,
               fontWeight: 850,
               letterSpacing: "-1px",
               fontSize: { xs: "1.7rem", sm: "2.1rem" },
@@ -190,7 +287,7 @@ export default function Bugs() {
             Bug Management
           </Typography>
 
-          <Typography color="text.secondary" sx={{ mt: 0.75 }}>
+          <Typography sx={{ ...secondaryTextSx, mt: 0.75 }}>
             Track, organize, update, and analyze your bug reports.
           </Typography>
         </Box>
@@ -201,7 +298,7 @@ export default function Bugs() {
             startIcon={<RefreshRoundedIcon />}
             onClick={loadBugs}
             disabled={loading}
-            sx={{ borderRadius: 2, textTransform: "none" }}
+            sx={secondaryButtonSx}
           >
             Refresh
           </Button>
@@ -210,27 +307,23 @@ export default function Bugs() {
             variant="contained"
             startIcon={<AddRoundedIcon />}
             onClick={openAddForm}
-            sx={{
-              borderRadius: 2,
-              textTransform: "none",
-              fontWeight: 700,
-              background: "#31b8c6",
-              color: "#071316",
-              boxShadow: "none",
-              "&:hover": {
-                background: "#54d0dc",
-                boxShadow: "none",
-              },
-            }}
+            sx={primaryButtonSx}
           >
             Add Bug
           </Button>
         </Box>
       </Box>
 
-      {/* Add/edit form */}
+      {/* ADD / EDIT FORM */}
+
       {formOpen && (
-        <Paper sx={{ ...panelSx, p: { xs: 2, md: 3 }, mb: 3 }}>
+        <Paper
+          sx={{
+            ...panelSx,
+            p: { xs: 2, md: 3 },
+            mb: 3,
+          }}
+        >
           <Box
             sx={{
               display: "flex",
@@ -241,17 +334,11 @@ export default function Bugs() {
               mb: 2,
             }}
           >
-            <Typography variant="h6" sx={{ fontWeight: 800 }}>
+            <Typography variant="h6" sx={headingSx}>
               {selectedBug ? "Update Bug Report" : "Create Bug Report"}
             </Typography>
 
-            <Button
-              onClick={() => {
-                setFormOpen(false);
-                setSelectedBug(null);
-              }}
-              sx={{ textTransform: "none" }}
-            >
+            <Button onClick={closeForm} sx={secondaryButtonSx}>
               Cancel
             </Button>
           </Box>
@@ -259,19 +346,16 @@ export default function Bugs() {
           <BugForm
             selectedBug={selectedBug}
             onBugAdded={async () => {
-              setFormOpen(false);
-              setSelectedBug(null);
+              closeForm();
               await loadBugs();
             }}
-            clearSelection={() => {
-              setFormOpen(false);
-              setSelectedBug(null);
-            }}
+            clearSelection={closeForm}
           />
         </Paper>
       )}
 
-      {/* Summary strip */}
+      {/* SUMMARY STRIP */}
+
       <Paper
         sx={{
           ...panelSx,
@@ -284,10 +368,14 @@ export default function Bugs() {
         }}
       >
         <Box>
-          <Typography variant="body2" color="text.secondary">
+          <Typography variant="body2" sx={secondaryTextSx}>
             Total bug reports
           </Typography>
-          <Typography variant="h4" sx={{ fontWeight: 800, mt: 0.5 }}>
+
+          <Typography
+            variant="h4"
+            sx={{ ...headingSx, mt: 0.5 }}
+          >
             {loading ? "—" : bugs.length}
           </Typography>
         </Box>
@@ -296,21 +384,26 @@ export default function Bugs() {
           sx={{
             width: "1px",
             alignSelf: "stretch",
-            background: "var(--border, #303039)",
+            backgroundColor: "var(--border)",
           }}
         />
 
         <Box>
-          <Typography variant="body2" color="text.secondary">
+          <Typography variant="body2" sx={secondaryTextSx}>
             Matching results
           </Typography>
-          <Typography variant="h4" sx={{ fontWeight: 800, mt: 0.5 }}>
+
+          <Typography
+            variant="h4"
+            sx={{ ...headingSx, mt: 0.5 }}
+          >
             {loading ? "—" : filteredBugs.length}
           </Typography>
         </Box>
       </Paper>
 
-      {/* Search and filters */}
+      {/* SEARCH AND FILTERS */}
+
       <Paper
         sx={{
           ...panelSx,
@@ -318,7 +411,7 @@ export default function Bugs() {
           mb: 3,
         }}
       >
-        <Typography variant="h6" sx={{ fontWeight: 800, mb: 2 }}>
+        <Typography variant="h6" sx={{ ...headingSx, mb: 2 }}>
           Search and Filters
         </Typography>
 
@@ -345,7 +438,7 @@ export default function Bugs() {
               input: {
                 startAdornment: (
                   <SearchRoundedIcon
-                    sx={{ mr: 1, color: "text.secondary" }}
+                    sx={{ mr: 1, color: "var(--text)" }}
                   />
                 ),
               },
@@ -354,13 +447,16 @@ export default function Bugs() {
 
           <FormControl fullWidth size="small" sx={inputSx}>
             <InputLabel id="bug-severity-label">Severity</InputLabel>
+
             <Select
               labelId="bug-severity-label"
               label="Severity"
               value={severity}
               onChange={(event) => setSeverity(event.target.value)}
+              MenuProps={menuProps}
             >
               <MenuItem value="">All Severities</MenuItem>
+
               {severities.map((value) => (
                 <MenuItem key={value} value={value}>
                   {value}
@@ -371,13 +467,16 @@ export default function Bugs() {
 
           <FormControl fullWidth size="small" sx={inputSx}>
             <InputLabel id="bug-status-label">Status</InputLabel>
+
             <Select
               labelId="bug-status-label"
               label="Status"
               value={status}
               onChange={(event) => setStatus(event.target.value)}
+              MenuProps={menuProps}
             >
               <MenuItem value="">All Statuses</MenuItem>
+
               {statuses.map((value) => (
                 <MenuItem key={value} value={value}>
                   {value}
@@ -388,11 +487,23 @@ export default function Bugs() {
         </Box>
 
         {filtersApplied && (
-          <Box sx={{ display: "flex", justifyContent: "flex-end", mt: 2 }}>
+          <Box
+            sx={{
+              display: "flex",
+              justifyContent: "flex-end",
+              mt: 2,
+            }}
+          >
             <Button
               startIcon={<FilterAltOffRoundedIcon />}
               onClick={clearFilters}
-              sx={{ textTransform: "none" }}
+              sx={{
+                color: "var(--accent)",
+                textTransform: "none",
+                "&:hover": {
+                  backgroundColor: "var(--accent-bg)",
+                },
+              }}
             >
               Clear filters
             </Button>
@@ -400,7 +511,8 @@ export default function Bugs() {
         )}
       </Paper>
 
-      {/* Bug table */}
+      {/* BUG TABLE */}
+
       <Paper
         sx={{
           ...panelSx,
@@ -418,11 +530,11 @@ export default function Bugs() {
             mb: 2,
           }}
         >
-          <Typography variant="h6" sx={{ fontWeight: 800 }}>
+          <Typography variant="h6" sx={headingSx}>
             All Bug Reports
           </Typography>
 
-          <Typography variant="body2" color="text.secondary">
+          <Typography variant="body2" sx={secondaryTextSx}>
             {loading ? "Loading..." : `${filteredBugs.length} results`}
           </Typography>
         </Box>
@@ -430,9 +542,18 @@ export default function Bugs() {
         {error && (
           <Alert
             severity="error"
-            sx={{ mb: 2, borderRadius: 2 }}
+            sx={{
+              mb: 2,
+              borderRadius: 2,
+              backgroundColor: "var(--surface-secondary)",
+              color: "var(--text)",
+            }}
             action={
-              <Button color="inherit" size="small" onClick={loadBugs}>
+              <Button
+                color="inherit"
+                size="small"
+                onClick={loadBugs}
+              >
                 Retry
               </Button>
             }
@@ -452,8 +573,11 @@ export default function Bugs() {
               py: 7,
             }}
           >
-            <CircularProgress />
-            <Typography color="text.secondary">
+            <CircularProgress
+              sx={{ color: "var(--accent)" }}
+            />
+
+            <Typography sx={secondaryTextSx}>
               Loading bug reports...
             </Typography>
           </Box>
@@ -466,25 +590,42 @@ export default function Bugs() {
             />
           </Box>
         ) : !error ? (
-          <Box sx={{ textAlign: "center", py: 6, px: 2 }}>
-            <Typography variant="h6" sx={{ fontWeight: 800 }}>
+          <Box
+            sx={{
+              textAlign: "center",
+              py: 6,
+              px: 2,
+              border: "1px dashed var(--border)",
+              borderRadius: 3,
+              backgroundColor: "var(--surface-secondary)",
+            }}
+          >
+            <Typography variant="h6" sx={headingSx}>
               {bugs.length === 0
                 ? "No bug reports yet"
                 : "No matching bugs found"}
             </Typography>
 
-            <Typography color="text.secondary" sx={{ mt: 1, mb: 2 }}>
+            <Typography sx={{ ...secondaryTextSx, mt: 1, mb: 2 }}>
               {bugs.length === 0
                 ? "Add a bug report to get started."
                 : "Try different search terms or clear your filters."}
             </Typography>
 
             {filtersApplied ? (
-              <Button onClick={clearFilters} variant="outlined">
+              <Button
+                onClick={clearFilters}
+                variant="outlined"
+                sx={secondaryButtonSx}
+              >
                 Clear filters
               </Button>
             ) : (
-              <Button onClick={openAddForm} variant="contained">
+              <Button
+                onClick={openAddForm}
+                variant="contained"
+                sx={primaryButtonSx}
+              >
                 Add your first bug
               </Button>
             )}
