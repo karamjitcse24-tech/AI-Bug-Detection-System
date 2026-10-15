@@ -41,7 +41,8 @@ function BugForm({ onBugAdded, selectedBug, clearSelection }) {
   const [loadingAI, setLoadingAI] = useState(false);
   const [aiAnalysis, setAiAnalysis] = useState("");
 
-  // Theme-aware colors shared by the form controls.
+  // ================= THEME-AWARE INPUT STYLES =================
+
   const inputStyles = {
     "& .MuiInputLabel-root": {
       color: "var(--text)",
@@ -52,6 +53,7 @@ function BugForm({ onBugAdded, selectedBug, clearSelection }) {
     "& .MuiOutlinedInput-root": {
       color: "var(--text-h)",
       backgroundColor: "var(--surface)",
+      borderRadius: 2,
       "& fieldset": {
         borderColor: "var(--border)",
       },
@@ -71,7 +73,26 @@ function BugForm({ onBugAdded, selectedBug, clearSelection }) {
     },
   };
 
-  // Load selected bug data for editing.
+  // Ensure dropdown menus also follow the active theme.
+  const menuProps = {
+    PaperProps: {
+      sx: {
+        backgroundColor: "var(--surface)",
+        color: "var(--text)",
+        border: "1px solid var(--border)",
+        boxShadow: "var(--shadow)",
+        "& .MuiMenuItem-root:hover": {
+          backgroundColor: "var(--surface-secondary)",
+        },
+        "& .MuiMenuItem-root.Mui-selected": {
+          backgroundColor: "var(--accent-bg)",
+        },
+      },
+    },
+  };
+
+  // ================= LOAD SELECTED BUG =================
+
   useEffect(() => {
     if (selectedBug) {
       setBug({
@@ -99,7 +120,8 @@ function BugForm({ onBugAdded, selectedBug, clearSelection }) {
     }
   }, [selectedBug]);
 
-  // Reset form fields.
+  // ================= RESET FORM =================
+
   const resetFormData = () => {
     setBug({
       title: "",
@@ -113,7 +135,8 @@ function BugForm({ onBugAdded, selectedBug, clearSelection }) {
     setAiAnalysis("");
   };
 
-  // Handle changes in input fields.
+  // ================= HANDLE INPUT CHANGES =================
+
   const handleChange = (e) => {
     const { name, value } = e.target;
 
@@ -123,7 +146,8 @@ function BugForm({ onBugAdded, selectedBug, clearSelection }) {
     }));
   };
 
-  // Analyze the bug using the existing AI API.
+  // ================= AI ANALYSIS =================
+
   const analyzeWithAI = async () => {
     if (!bug.description.trim()) {
       alert("Please enter Bug Description first.");
@@ -210,7 +234,8 @@ function BugForm({ onBugAdded, selectedBug, clearSelection }) {
     }
   };
 
-  // Create a new bug or update an existing bug.
+  // ================= CREATE OR UPDATE BUG =================
+
   const handleSubmit = async (e) => {
     e.preventDefault();
 
@@ -238,6 +263,8 @@ function BugForm({ onBugAdded, selectedBug, clearSelection }) {
     }
   };
 
+  // ================= UI =================
+
   return (
     <Card
       sx={{
@@ -246,13 +273,13 @@ function BugForm({ onBugAdded, selectedBug, clearSelection }) {
         boxSizing: "border-box",
         margin: "30px auto",
         borderRadius: 4,
-        boxShadow: 6,
+        boxShadow: "var(--shadow)",
         padding: { xs: 0.5, sm: 2 },
         backgroundColor: "var(--surface)",
         color: "var(--text)",
         border: "1px solid var(--border)",
         transition:
-          "background-color 0.25s ease, color 0.25s ease",
+          "background-color 0.25s ease, color 0.25s ease, border-color 0.25s ease",
       }}
     >
       <CardContent
@@ -300,6 +327,7 @@ function BugForm({ onBugAdded, selectedBug, clearSelection }) {
                 name="severity"
                 value={bug.severity}
                 onChange={handleChange}
+                SelectProps={{ MenuProps: menuProps }}
                 sx={inputStyles}
               >
                 <MenuItem value="Low">Low</MenuItem>
@@ -318,12 +346,11 @@ function BugForm({ onBugAdded, selectedBug, clearSelection }) {
                 name="status"
                 value={bug.status}
                 onChange={handleChange}
+                SelectProps={{ MenuProps: menuProps }}
                 sx={inputStyles}
               >
                 <MenuItem value="Open">Open</MenuItem>
-                <MenuItem value="In Progress">
-                  In Progress
-                </MenuItem>
+                <MenuItem value="In Progress">In Progress</MenuItem>
                 <MenuItem value="Resolved">Resolved</MenuItem>
                 <MenuItem value="Closed">Closed</MenuItem>
               </TextField>
@@ -376,13 +403,14 @@ function BugForm({ onBugAdded, selectedBug, clearSelection }) {
             {aiAnalysis && !loadingAI && (
               <Grid item xs={12}>
                 <Paper
-                  elevation={2}
+                  elevation={0}
                   sx={{
                     p: { xs: 2, sm: 3 },
                     borderRadius: 3,
                     backgroundColor: "var(--surface-secondary)",
                     color: "var(--text)",
                     border: "1px solid var(--border)",
+                    boxShadow: "var(--shadow)",
                     overflowWrap: "anywhere",
                     transition:
                       "background-color 0.25s ease, color 0.25s ease",
@@ -471,6 +499,7 @@ function BugForm({ onBugAdded, selectedBug, clearSelection }) {
                           lineHeight: 1.7,
                           color: "var(--text)",
                           whiteSpace: "pre-line",
+                          overflowWrap: "anywhere",
                         }}
                       >
                         {bug.aiReason}
@@ -506,6 +535,7 @@ function BugForm({ onBugAdded, selectedBug, clearSelection }) {
                           lineHeight: 1.7,
                           color: "var(--text)",
                           whiteSpace: "pre-line",
+                          overflowWrap: "anywhere",
                         }}
                       >
                         {bug.aiRecommendation}
@@ -521,6 +551,7 @@ function BugForm({ onBugAdded, selectedBug, clearSelection }) {
                         whiteSpace: "pre-line",
                         lineHeight: 1.7,
                         color: "var(--text)",
+                        overflowWrap: "anywhere",
                       }}
                     >
                       {aiAnalysis}
@@ -556,6 +587,7 @@ function BugForm({ onBugAdded, selectedBug, clearSelection }) {
                     borderRadius: 3,
                     fontSize: "14px",
                     fontWeight: "bold",
+                    textTransform: "none",
                   }}
                 >
                   {selectedBug ? "Update Bug" : "Add Bug"}
@@ -575,6 +607,12 @@ function BugForm({ onBugAdded, selectedBug, clearSelection }) {
                     borderRadius: 3,
                     fontSize: "14px",
                     fontWeight: "bold",
+                    textTransform: "none",
+                    borderColor: "var(--accent-border)",
+                    "&:hover": {
+                      borderColor: "var(--accent)",
+                      backgroundColor: "var(--accent-bg)",
+                    },
                   }}
                 >
                   {loadingAI ? "Analyzing..." : "Analyze with AI"}
@@ -595,6 +633,7 @@ function BugForm({ onBugAdded, selectedBug, clearSelection }) {
                     sx={{
                       color: "var(--text)",
                       borderRadius: 2,
+                      textTransform: "none",
                     }}
                   >
                     Cancel Edit
