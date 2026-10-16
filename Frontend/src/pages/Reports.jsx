@@ -1,5 +1,6 @@
 
 import { useEffect, useMemo, useState } from "react";
+
 import {
   Alert,
   Box,
@@ -8,12 +9,14 @@ import {
   Paper,
   Typography,
 } from "@mui/material";
+
 import {
   BugReportRounded,
   CheckCircleRounded,
   PendingActionsRounded,
   PriorityHighRounded,
 } from "@mui/icons-material";
+
 import {
   ResponsiveContainer,
   BarChart,
@@ -29,7 +32,10 @@ import {
   LineChart,
   Line,
 } from "recharts";
+
 import { getAllBugs } from "../services/bugService";
+
+// ================= CHART COLORS =================
 
 const COLORS = [
   "#22d3ee",
@@ -40,26 +46,23 @@ const COLORS = [
   "#a78bfa",
 ];
 
+// ================= THEME STYLES =================
+
 const panelSx = {
   p: 2.5,
   height: "100%",
   minWidth: 0,
   borderRadius: 3,
-  bgcolor: "var(--surface, #191a20)",
-  color: "var(--text, #f3f4f6)",
-  border: "1px solid var(--border, #30313b)",
-  boxShadow: "none",
-};
-
-const chartTooltipStyle = {
-  backgroundColor: "#20212b",
-  border: "1px solid #3b3d4a",
-  borderRadius: 10,
-  color: "#f3f4f6",
+  backgroundColor: "var(--surface)",
+  color: "var(--text)",
+  border: "1px solid var(--border)",
+  boxShadow: "var(--shadow)",
+  transition:
+    "background-color 0.2s ease, color 0.2s ease, border-color 0.2s ease",
 };
 
 const chartTextStyle = {
-  fill: "#a1a1aa",
+  fill: "var(--text)",
   fontSize: 12,
 };
 
@@ -71,6 +74,7 @@ function getDate(value) {
   if (!value) return null;
 
   const date = new Date(value);
+
   return Number.isNaN(date.getTime()) ? null : date;
 }
 
@@ -80,24 +84,32 @@ function isResolvedBug(bug) {
   );
 }
 
+// ================= STATISTICS CARD =================
+
 function StatCard({ title, value, subtitle, icon, color }) {
   return (
     <Paper sx={panelSx}>
       <Box display="flex" justifyContent="space-between" gap={2}>
         <Box minWidth={0}>
-          <Typography variant="body2" color="text.secondary">
+          <Typography
+            variant="body2"
+            sx={{ color: "var(--text)" }}
+          >
             {title}
           </Typography>
 
           <Typography
             variant="h4"
             fontWeight={800}
-            sx={{ color: "var(--text, #f3f4f6)", mt: 1 }}
+            sx={{ color: "var(--text-h)", mt: 1 }}
           >
             {value}
           </Typography>
 
-          <Typography variant="caption" color="text.secondary">
+          <Typography
+            variant="caption"
+            sx={{ color: "var(--text)" }}
+          >
             {subtitle}
           </Typography>
         </Box>
@@ -121,14 +133,25 @@ function StatCard({ title, value, subtitle, icon, color }) {
   );
 }
 
+// ================= CHART PANEL =================
+
 function ChartPanel({ title, subtitle, children, height = 300 }) {
   return (
     <Paper sx={panelSx}>
-      <Typography variant="h6" fontWeight={700} gutterBottom>
+      <Typography
+        variant="h6"
+        fontWeight={700}
+        gutterBottom
+        sx={{ color: "var(--text-h)" }}
+      >
         {title}
       </Typography>
 
-      <Typography variant="body2" color="text.secondary" mb={2}>
+      <Typography
+        variant="body2"
+        mb={2}
+        sx={{ color: "var(--text)" }}
+      >
         {subtitle}
       </Typography>
 
@@ -146,6 +169,8 @@ function ChartPanel({ title, subtitle, children, height = 300 }) {
     </Paper>
   );
 }
+
+// ================= REPORTS PAGE =================
 
 export default function Reports() {
   const [bugs, setBugs] = useState([]);
@@ -165,8 +190,8 @@ export default function Reports() {
         const records = Array.isArray(response?.data)
           ? response.data
           : Array.isArray(response)
-            ? response
-            : [];
+          ? response
+          : [];
 
         if (active) {
           setBugs(records);
@@ -192,6 +217,8 @@ export default function Reports() {
     };
   }, []);
 
+  // ================= SUMMARY STATISTICS =================
+
   const stats = useMemo(() => {
     const resolved = bugs.filter(isResolvedBug).length;
     const open = bugs.length - resolved;
@@ -211,6 +238,8 @@ export default function Reports() {
     };
   }, [bugs]);
 
+  // ================= SEVERITY DATA =================
+
   const severityData = useMemo(() => {
     const categories = [
       { key: "critical", label: "Critical" },
@@ -227,6 +256,8 @@ export default function Reports() {
     }));
   }, [bugs]);
 
+  // ================= STATUS DATA =================
+
   const statusData = useMemo(() => {
     const categories = [
       { key: "open", label: "Open" },
@@ -242,6 +273,8 @@ export default function Reports() {
       ).length,
     }));
   }, [bugs]);
+
+  // ================= REPORTING TREND =================
 
   const trendData = useMemo(() => {
     const months = [];
@@ -265,6 +298,7 @@ export default function Reports() {
 
     bugs.forEach((bug) => {
       const created = getDate(bug.createdAt);
+
       if (!created) return;
 
       const key = `${created.getFullYear()}-${created.getMonth()}`;
@@ -289,6 +323,8 @@ export default function Reports() {
     return months;
   }, [bugs]);
 
+  // ================= LOADING STATE =================
+
   if (loading) {
     return (
       <Box
@@ -298,14 +334,18 @@ export default function Reports() {
         alignItems="center"
         justifyContent="center"
         gap={2}
+        sx={{ color: "var(--text)" }}
       >
-        <CircularProgress />
-        <Typography color="text.secondary">
+        <CircularProgress sx={{ color: "var(--accent)" }} />
+
+        <Typography sx={{ color: "var(--text)" }}>
           Preparing your reports...
         </Typography>
       </Box>
     );
   }
+
+  // ================= PAGE UI =================
 
   return (
     <Box
@@ -314,29 +354,38 @@ export default function Reports() {
         width: "100%",
         minWidth: 0,
         boxSizing: "border-box",
-        color: "var(--text, #f3f4f6)",
+        color: "var(--text)",
       }}
     >
+      {/* PAGE HEADER */}
+
       <Box mb={3}>
         <Typography
           variant="h4"
           fontWeight={800}
           gutterBottom
-          sx={{ overflowWrap: "anywhere" }}
+          sx={{
+            color: "var(--text-h)",
+            overflowWrap: "anywhere",
+          }}
         >
           Reports &amp; Analytics
         </Typography>
 
-        <Typography color="text.secondary">
+        <Typography sx={{ color: "var(--text)" }}>
           Understand bug severity, resolution progress, and reporting trends.
         </Typography>
       </Box>
+
+      {/* ERROR MESSAGE */}
 
       {error && (
         <Alert severity="error" sx={{ mb: 3 }}>
           {error}
         </Alert>
       )}
+
+      {/* STATISTICS */}
 
       <Grid container spacing={2.5} sx={{ mb: 3 }}>
         <Grid item xs={12} sm={6} lg={3}>
@@ -380,7 +429,11 @@ export default function Reports() {
         </Grid>
       </Grid>
 
+      {/* CHARTS */}
+
       <Grid container spacing={2.5}>
+        {/* BUGS BY SEVERITY */}
+
         <Grid item xs={12} lg={6}>
           <ChartPanel
             title="Bugs by Severity"
@@ -398,22 +451,40 @@ export default function Reports() {
               >
                 <CartesianGrid
                   strokeDasharray="3 3"
-                  stroke="#41424c"
+                  stroke="var(--border)"
                   vertical={false}
                 />
 
-                <XAxis dataKey="name" tick={chartTextStyle} />
+                <XAxis
+                  dataKey="name"
+                  tick={chartTextStyle}
+                  axisLine={{ stroke: "var(--border)" }}
+                  tickLine={{ stroke: "var(--border)" }}
+                />
+
                 <YAxis
                   allowDecimals={false}
                   tick={chartTextStyle}
+                  axisLine={{ stroke: "var(--border)" }}
+                  tickLine={{ stroke: "var(--border)" }}
                 />
 
-                <Tooltip contentStyle={chartTooltipStyle} />
+                <Tooltip
+                  contentStyle={{
+                    backgroundColor: "var(--surface)",
+                    border: "1px solid var(--border)",
+                    borderRadius: 10,
+                    color: "var(--text-h)",
+                  }}
+                  labelStyle={{ color: "var(--text-h)" }}
+                  itemStyle={{ color: "var(--text)" }}
+                  cursor={{ fill: "var(--accent-bg)" }}
+                />
 
                 <Bar
                   dataKey="count"
                   name="Bugs"
-                  fill="#22d3ee"
+                  fill="var(--accent)"
                   radius={[6, 6, 0, 0]}
                   maxBarSize={55}
                 />
@@ -421,6 +492,8 @@ export default function Reports() {
             </ResponsiveContainer>
           </ChartPanel>
         </Grid>
+
+        {/* STATUS DISTRIBUTION */}
 
         <Grid item xs={12} lg={6}>
           <ChartPanel
@@ -452,12 +525,29 @@ export default function Reports() {
                   ))}
                 </Pie>
 
-                <Tooltip contentStyle={chartTooltipStyle} />
-                <Legend />
+                <Tooltip
+                  contentStyle={{
+                    backgroundColor: "var(--surface)",
+                    border: "1px solid var(--border)",
+                    borderRadius: 10,
+                    color: "var(--text-h)",
+                  }}
+                  labelStyle={{ color: "var(--text-h)" }}
+                  itemStyle={{ color: "var(--text)" }}
+                />
+
+                <Legend
+                  wrapperStyle={{
+                    color: "var(--text)",
+                    fontSize: 12,
+                  }}
+                />
               </PieChart>
             </ResponsiveContainer>
           </ChartPanel>
         </Grid>
+
+        {/* REPORTING TREND */}
 
         <Grid item xs={12}>
           <ChartPanel
@@ -477,19 +567,41 @@ export default function Reports() {
               >
                 <CartesianGrid
                   strokeDasharray="3 3"
-                  stroke="#41424c"
+                  stroke="var(--border)"
                   vertical={false}
                 />
 
-                <XAxis dataKey="month" tick={chartTextStyle} />
+                <XAxis
+                  dataKey="month"
+                  tick={chartTextStyle}
+                  axisLine={{ stroke: "var(--border)" }}
+                  tickLine={{ stroke: "var(--border)" }}
+                />
 
                 <YAxis
                   allowDecimals={false}
                   tick={chartTextStyle}
+                  axisLine={{ stroke: "var(--border)" }}
+                  tickLine={{ stroke: "var(--border)" }}
                 />
 
-                <Tooltip contentStyle={chartTooltipStyle} />
-                <Legend />
+                <Tooltip
+                  contentStyle={{
+                    backgroundColor: "var(--surface)",
+                    border: "1px solid var(--border)",
+                    borderRadius: 10,
+                    color: "var(--text-h)",
+                  }}
+                  labelStyle={{ color: "var(--text-h)" }}
+                  itemStyle={{ color: "var(--text)" }}
+                />
+
+                <Legend
+                  wrapperStyle={{
+                    color: "var(--text)",
+                    fontSize: 12,
+                  }}
+                />
 
                 <Line
                   type="monotone"
@@ -516,6 +628,8 @@ export default function Reports() {
         </Grid>
       </Grid>
 
+      {/* EMPTY STATE */}
+
       {bugs.length === 0 && !error && (
         <Alert severity="info" sx={{ mt: 3 }}>
           No bug reports are available yet. Create a bug report to start
@@ -523,11 +637,12 @@ export default function Reports() {
         </Alert>
       )}
 
+      {/* FOOTNOTE */}
+
       <Typography
         variant="caption"
-        color="text.secondary"
         display="block"
-        sx={{ mt: 3 }}
+        sx={{ mt: 3, color: "var(--text)" }}
       >
         Analytics are calculated from the bug records returned for your
         account. Historical resolution dates are estimated from the available
