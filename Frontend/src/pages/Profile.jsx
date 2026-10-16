@@ -205,8 +205,8 @@ export default function Profile() {
               <Typography
                 variant="caption"
                 sx={{
-                  color: "#34d399",
-                  bgcolor: "rgba(52,211,153,0.12)",
+                  color: "var(--accent)",
+                  bgcolor: "var(--accent-bg)",
                   px: 1.2,
                   py: 0.5,
                   borderRadius: 5,
@@ -218,8 +218,8 @@ export default function Profile() {
               <Typography
                 variant="caption"
                 sx={{
-                  color: "#22d3ee",
-                  bgcolor: "rgba(34,211,238,0.12)",
+                  color: "var(--accent)",
+                  bgcolor: "var(--accent-bg)",
                   px: 1.2,
                   py: 0.5,
                   borderRadius: 5,
@@ -335,7 +335,7 @@ export default function Profile() {
             </Box>
           </Box>
 
-          <FormControl size="small" sx={{ minWidth: 150 }}>
+          <FormControl size="small" sx={{ ...themedFieldSx, minWidth: 150 }}>
             <Select
               value={theme}
               inputProps={{ "aria-label": "Color theme" }}
@@ -373,7 +373,7 @@ export default function Profile() {
             </Typography>
           </Box>
 
-          <FormControl size="small" sx={{ minWidth: 170 }}>
+          <FormControl size="small" sx={{ ...themedFieldSx, minWidth: 170 }}>
             <Select
               value={density}
               inputProps={{ "aria-label": "Task card density" }}
