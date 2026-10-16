@@ -120,7 +120,13 @@ function Navbar() {
         position="static"
         elevation={4}
         sx={{
-          background: "linear-gradient(90deg, #1565c0, #1976d2)",
+          background:
+            theme === "dark"
+              ? "linear-gradient(90deg, #191f29, #222b38)"
+              : "linear-gradient(90deg, #1d4ed8, #2563eb)",
+          color: "var(--text-h)",
+          borderBottom: "1px solid var(--border)",
+          transition: "background 0.25s ease, color 0.25s ease",
         }}
       >
         <Toolbar
@@ -274,8 +280,8 @@ function Navbar() {
                     xs: 36,
                     sm: 42,
                   },
-                  bgcolor: "#ff9800",
-                  color: "white",
+                  bgcolor: theme === "dark" ? "var(--accent)" : "#f59e0b",
+                  color: theme === "dark" ? "#101319" : "#ffffff",
                   fontWeight: "bold",
                   fontSize: {
                     xs: "15px",
@@ -312,7 +318,20 @@ function Navbar() {
               mt: 1,
               minWidth: 220,
               borderRadius: 2,
-              boxShadow: 4,
+              boxShadow: "var(--shadow)",
+              backgroundColor: "var(--surface)",
+              color: "var(--text-h)",
+              border: "1px solid var(--border)",
+              "& .MuiMenuItem-root": {
+                color: "var(--text)",
+                transition: "background-color 0.2s ease",
+              },
+              "& .MuiMenuItem-root:hover": {
+                backgroundColor: "var(--accent-bg)",
+              },
+              "& .MuiDivider-root": {
+                borderColor: "var(--border)",
+              },
             },
           },
         }}
@@ -334,7 +353,7 @@ function Navbar() {
           </Typography>
         </Box>
 
-        <Divider />
+        <Divider sx={{ borderColor: "var(--border)" }} />
 
         <MenuItem onClick={() => handleOpenDialog("profile")}>
           <ListItemIcon>
@@ -350,7 +369,7 @@ function Navbar() {
           Settings
         </MenuItem>
 
-        <Divider />
+        <Divider sx={{ borderColor: "var(--border)" }} />
 
         <MenuItem
           onClick={handleLogout}
@@ -370,6 +389,14 @@ function Navbar() {
         onClose={handleCloseDialog}
         fullWidth
         maxWidth="xs"
+        PaperProps={{
+          sx: {
+            backgroundColor: "var(--surface)",
+            color: "var(--text-h)",
+            border: "1px solid var(--border)",
+            backgroundImage: "none",
+          },
+        }}
       >
         <DialogTitle
           sx={{
@@ -403,7 +430,8 @@ function Navbar() {
               sx={{
                 width: 72,
                 height: 72,
-                bgcolor: "#ff9800",
+                bgcolor: theme === "dark" ? "var(--accent)" : "#f59e0b",
+                color: theme === "dark" ? "#101319" : "#ffffff",
                 fontSize: 30,
                 fontWeight: "bold",
               }}
@@ -427,7 +455,7 @@ function Navbar() {
             </Typography>
           </Box>
 
-          <Divider sx={{ my: 2 }} />
+          <Divider sx={{ my: 2, borderColor: "var(--border)" }} />
 
           <Typography variant="body2" color="text.secondary">
             Account information
@@ -456,6 +484,14 @@ function Navbar() {
         onClose={handleCloseDialog}
         fullWidth
         maxWidth="xs"
+        PaperProps={{
+          sx: {
+            backgroundColor: "var(--surface)",
+            color: "var(--text-h)",
+            border: "1px solid var(--border)",
+            backgroundImage: "none",
+          },
+        }}
       >
         <DialogTitle
           sx={{
@@ -494,7 +530,7 @@ function Navbar() {
             {user?.email || "No email available"}
           </Typography>
 
-          <Divider sx={{ my: 2 }} />
+          <Divider sx={{ my: 2, borderColor: "var(--border)" }} />
 
           {/* APPEARANCE */}
 
