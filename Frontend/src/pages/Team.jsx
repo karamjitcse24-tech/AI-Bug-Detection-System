@@ -28,7 +28,7 @@ const panelSx = {
   bgcolor: "var(--surface, #191a20)",
   color: "var(--text, #f3f4f6)",
   border: "1px solid var(--border, #30313b)",
-  boxShadow: "none",
+  boxShadow: "var(--shadow)",
   minWidth: 0,
 };
 
@@ -237,6 +237,24 @@ export default function Team() {
         minWidth: 0,
         boxSizing: "border-box",
         color: "var(--text, #f3f4f6)",
+        "& .MuiPaper-root": {
+          backgroundColor: "var(--surface, #ffffff)",
+          color: "var(--text, #475569)",
+          borderColor: "var(--border, #dbe3ee)",
+        },
+        "& .MuiInputBase-root": {
+          color: "var(--text, #475569)",
+          backgroundColor: "var(--surface, #ffffff)",
+        },
+        "& .MuiOutlinedInput-notchedOutline": {
+          borderColor: "var(--border, #dbe3ee)",
+        },
+        "& .MuiInputLabel-root": {
+          color: "var(--text, #475569)",
+        },
+        "& .MuiSvgIcon-root": {
+          color: "inherit",
+        },
       }}
     >
       <Box
