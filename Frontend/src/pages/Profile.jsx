@@ -28,10 +28,23 @@ import {
 const panelSx = {
   p: 3,
   borderRadius: 3,
-  bgcolor: "var(--surface, #191a20)",
-  color: "var(--text, #f3f4f6)",
-  border: "1px solid var(--border, #30313b)",
-  boxShadow: "none",
+  bgcolor: "var(--surface)",
+  color: "var(--text)",
+  border: "1px solid var(--border)",
+  boxShadow: "var(--shadow)",
+  transition: "background-color 0.2s ease, color 0.2s ease, border-color 0.2s ease",
+};
+
+const themedFieldSx = {
+  minWidth: 150,
+  "& .MuiOutlinedInput-root": {
+    color: "var(--text)",
+    bgcolor: "var(--surface-secondary)",
+    "& fieldset": { borderColor: "var(--border)" },
+    "&:hover fieldset": { borderColor: "var(--accent)" },
+    "&.Mui-focused fieldset": { borderColor: "var(--accent)" },
+  },
+  "& .MuiSvgIcon-root": { color: "var(--text)" },
 };
 
 function readStoredUser() {
@@ -138,7 +151,7 @@ export default function Profile() {
         width: "100%",
         minWidth: 0,
         boxSizing: "border-box",
-        color: "var(--text, #f3f4f6)",
+        color: "var(--text)",
       }}
     >
       <Box mb={3}>
@@ -171,8 +184,8 @@ export default function Profile() {
             sx={{
               width: 76,
               height: 76,
-              bgcolor: "#22d3ee",
-              color: "#101820",
+              bgcolor: "var(--accent)",
+              color: "var(--bg)",
               fontSize: 27,
               fontWeight: 800,
             }}
@@ -237,7 +250,7 @@ export default function Profile() {
           </Typography>
         </Box>
 
-        <Divider sx={{ mb: 2.5 }} />
+        <Divider sx={{ mb: 2.5, borderColor: "var(--border)" }} />
 
         <Box
           sx={{
@@ -298,7 +311,7 @@ export default function Profile() {
           </Typography>
         </Box>
 
-        <Divider sx={{ mb: 2 }} />
+        <Divider sx={{ mb: 2, borderColor: "var(--border)" }} />
 
         <Box
           display="flex"
@@ -343,7 +356,7 @@ export default function Profile() {
           </Typography>
         </Box>
 
-        <Divider sx={{ mb: 2 }} />
+        <Divider sx={{ mb: 2, borderColor: "var(--border)" }} />
 
         <Box
           display="flex"
@@ -372,7 +385,7 @@ export default function Profile() {
           </FormControl>
         </Box>
 
-        <Divider sx={{ my: 1.5 }} />
+        <Divider sx={{ my: 1.5, borderColor: "var(--border)" }} />
 
         <Box
           display="flex"
@@ -403,10 +416,11 @@ export default function Profile() {
           onClick={savePreferences}
           sx={{
             mt: 3,
-            bgcolor: "#22d3ee",
-            color: "#101820",
+            bgcolor: "var(--accent)",
+            color: "var(--bg)",
             fontWeight: 700,
-            "&:hover": { bgcolor: "#67e8f9" },
+            boxShadow: "none",
+            "&:hover": { bgcolor: "var(--accent)", filter: "brightness(0.95)" },
           }}
         >
           Save Preferences
