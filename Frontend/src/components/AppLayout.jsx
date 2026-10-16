@@ -235,8 +235,8 @@ title: bug?.title || ("Bug #" + getBugId(bug)),
         display: "flex",
         width: "100%",
         minHeight: "100vh",
-        backgroundColor: "var(--bg, #111216)",
-        color: "var(--text-h, #f5f5f5)",
+        backgroundColor: "var(--bg)",
+        color: "var(--text-h)",
         transition: "background-color 180ms ease, color 180ms ease",
       }}
     >
@@ -247,9 +247,10 @@ title: bug?.title || ("Bug #" + getBugId(bug)),
           position="sticky"
           elevation={0}
           sx={{
-            backgroundColor: "var(--surface, #17171c)",
-            color: "var(--text-h, #f5f5f5)",
-            borderBottom: "1px solid var(--border, #303039)",
+            backgroundColor: "var(--surface)",
+            color: "var(--text-h)",
+            borderBottom: "1px solid var(--border)",
+            boxShadow: "var(--shadow)",
             backgroundImage: "none",
           }}
         >
@@ -283,7 +284,7 @@ title: bug?.title || ("Bug #" + getBugId(bug)),
                 variant="body2"
                 sx={{
                   fontWeight: 700,
-                  color: "var(--text-h, #f5f5f5)",
+                  color: "var(--text-h)",
                   overflow: "hidden",
                   textOverflow: "ellipsis",
                   whiteSpace: "nowrap",
@@ -305,18 +306,18 @@ title: bug?.title || ("Bug #" + getBugId(bug)),
                 width: { xs: 115, sm: 180, md: 225 },
                 "& .MuiOutlinedInput-root": {
                   borderRadius: 3,
-                  color: "var(--text-h, #f5f5f5)",
+                  color: "var(--text-h)",
                   backgroundColor: "var(--surface-secondary, #222229)",
                   fontSize: 13,
                   "& fieldset": {
                     borderColor: "var(--border, #303039)",
                   },
                   "&:hover fieldset, &.Mui-focused fieldset": {
-                    borderColor: "#35c6d2",
+                    borderColor: "var(--accent)",
                   },
                 },
                 "& .MuiInputBase-input::placeholder": {
-                  color: "var(--text-muted, #9999a5)",
+                  color: "var(--text)",
                   opacity: 1,
                 },
               }}
@@ -327,7 +328,7 @@ title: bug?.title || ("Bug #" + getBugId(bug)),
                       <SearchRoundedIcon
                         sx={{
                           fontSize: 19,
-                          color: "var(--text-muted, #9999a5)",
+                          color: "var(--text)",
                         }}
                       />
                     </InputAdornment>
@@ -348,7 +349,7 @@ title: bug?.title || ("Bug #" + getBugId(bug)),
                 aria-label="Toggle theme"
                 sx={{
                   color: "inherit",
-                  "&:hover": { color: "#35c6d2" },
+                  "&:hover": { color: "var(--accent)", bgcolor: "var(--accent-bg)" },
                 }}
               >
                 {currentTheme === "dark" ? (
@@ -367,7 +368,10 @@ title: bug?.title || ("Bug #" + getBugId(bug)),
                 aria-label="Open notifications"
                 aria-haspopup="true"
                 aria-expanded={notificationsOpen}
-                sx={{ color: "inherit" }}
+                sx={{
+                  color: "inherit",
+                  "&:hover": { color: "var(--accent)", bgcolor: "var(--accent-bg)" },
+                }}
               >
                 <Badge
                   badgeContent={unreadNotifications.length}
@@ -399,7 +403,7 @@ title: bug?.title || ("Bug #" + getBugId(bug)),
                     maxHeight: 440,
                     mt: 1,
                     backgroundColor: "var(--surface, #17171c)",
-                    color: "var(--text-h, #f5f5f5)",
+                    color: "var(--text-h)",
                     border: "1px solid var(--border, #303039)",
                     backgroundImage: "none",
                   },
@@ -440,7 +444,7 @@ title: bug?.title || ("Bug #" + getBugId(bug)),
               </Box>
 
               <Divider
-                sx={{ borderColor: "var(--border, #303039)" }}
+                sx={{ borderColor: "var(--border)" }}
               />
 
               {notificationError ? (
@@ -484,7 +488,7 @@ title: bug?.title || ("Bug #" + getBugId(bug)),
                         gap: 1.5,
                         py: 1.5,
                         backgroundColor: unread
-                          ? "var(--surface-secondary, #222229)"
+                          ? "var(--surface-secondary)"
                           : "transparent",
                       }}
                     >
@@ -521,7 +525,7 @@ title: bug?.title || ("Bug #" + getBugId(bug)),
                             width: 8,
                             height: 8,
                             borderRadius: "50%",
-                            bgcolor: "#35c6d2",
+                            bgcolor: "var(--accent)",
                             mt: 0.7,
                             flexShrink: 0,
                           }}
@@ -533,7 +537,7 @@ title: bug?.title || ("Bug #" + getBugId(bug)),
               )}
 
               <Divider
-                sx={{ borderColor: "var(--border, #303039)" }}
+                sx={{ borderColor: "var(--border)" }}
               />
 
               <Box sx={{ p: 1 }}>
@@ -562,8 +566,8 @@ title: bug?.title || ("Bug #" + getBugId(bug)),
                     height: 34,
                     fontSize: 14,
                     fontWeight: 700,
-                    bgcolor: "#28b8c6",
-                    color: "#071316",
+                    bgcolor: "var(--accent)",
+                    color: "var(--bg)",
                   }}
                 >
                   {initials}
@@ -579,8 +583,8 @@ title: bug?.title || ("Bug #" + getBugId(bug)),
             width: "100%",
             minWidth: 0,
             minHeight: "calc(100vh - 64px)",
-            backgroundColor: "var(--bg, #111216)",
-            color: "var(--text-h, #f5f5f5)",
+            backgroundColor: "var(--bg)",
+            color: "var(--text-h)",
             transition: "background-color 180ms ease, color 180ms ease",
           }}
         >
