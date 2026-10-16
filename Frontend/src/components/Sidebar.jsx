@@ -1,4 +1,3 @@
-
 import { NavLink, useNavigate } from "react-router-dom";
 import {
   Box,
@@ -49,10 +48,11 @@ export default function Sidebar() {
         minHeight: "100vh",
         display: "flex",
         flexDirection: "column",
-        background: "#101014",
-        color: "#f5f5f7",
-        borderRight: "1px solid #292930",
+        backgroundColor: "var(--surface)",
+        color: "var(--text)",
+        borderRight: "1px solid var(--border)",
         boxSizing: "border-box",
+        transition: "background-color 180ms ease, color 180ms ease, border-color 180ms ease",
       }}
     >
       {/* Brand */}
@@ -63,7 +63,7 @@ export default function Sidebar() {
           display: "flex",
           alignItems: "center",
           gap: 1.25,
-          borderBottom: "1px solid #292930",
+          borderBottom: "1px solid var(--border)",
         }}
       >
         <Box
@@ -73,7 +73,8 @@ export default function Sidebar() {
             display: "grid",
             placeItems: "center",
             borderRadius: "12px",
-            background: "linear-gradient(135deg, #20c6d2, #7764f6)",
+            background: "linear-gradient(135deg, var(--accent), #7764f6)",
+            flexShrink: 0,
           }}
         >
           <AutoAwesomeRoundedIcon sx={{ color: "#fff", fontSize: 23 }} />
@@ -85,9 +86,10 @@ export default function Sidebar() {
             fontWeight: 800,
             letterSpacing: -0.8,
             whiteSpace: "nowrap",
+            color: "var(--text-h)",
           }}
         >
-          Bug<span style={{ color: "#35c6d2" }}>Manager</span>
+          Bug<span style={{ color: "var(--accent)" }}>Manager</span>
         </Typography>
       </Box>
 
@@ -105,7 +107,8 @@ export default function Sidebar() {
               px: 1.75,
               gap: 1,
               borderRadius: "9px",
-              color: "#a6a6b2",
+              color: "var(--text)",
+              transition: "background-color 160ms ease, color 160ms ease",
               "& .MuiListItemIcon-root": {
                 color: "inherit",
                 minWidth: 29,
@@ -115,12 +118,12 @@ export default function Sidebar() {
                 fontWeight: 600,
               },
               "&:hover": {
-                background: "#202027",
-                color: "#fff",
+                backgroundColor: "var(--surface-secondary)",
+                color: "var(--text-h)",
               },
               "&.active": {
-                background: "rgba(43, 194, 207, 0.12)",
-                color: "#38c5d2",
+                backgroundColor: "var(--accent-bg)",
+                color: "var(--accent)",
               },
               "&.active::before": {
                 content: '""',
@@ -130,7 +133,7 @@ export default function Sidebar() {
                 bottom: 5,
                 width: 4,
                 borderRadius: "0 5px 5px 0",
-                background: "#35c6d2",
+                backgroundColor: "var(--accent)",
               },
             }}
           >
@@ -144,7 +147,7 @@ export default function Sidebar() {
       </List>
 
       {/* Logout */}
-      <Divider sx={{ borderColor: "#292930" }} />
+      <Divider sx={{ borderColor: "var(--border)" }} />
 
       <Box sx={{ p: 1.5 }}>
         <Button
@@ -155,13 +158,14 @@ export default function Sidebar() {
             justifyContent: "flex-start",
             px: 1.75,
             py: 1.25,
-            color: "#a6a6b2",
+            color: "var(--text)",
             textTransform: "none",
             fontSize: 13,
             fontWeight: 600,
+            borderRadius: "9px",
             "&:hover": {
-              background: "#292027",
-              color: "#ff8585",
+              backgroundColor: "rgba(251, 113, 133, 0.10)",
+              color: "#fb7185",
             },
           }}
         >
