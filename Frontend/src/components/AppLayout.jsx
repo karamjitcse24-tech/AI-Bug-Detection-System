@@ -307,10 +307,10 @@ title: bug?.title || ("Bug #" + getBugId(bug)),
                 "& .MuiOutlinedInput-root": {
                   borderRadius: 3,
                   color: "var(--text-h)",
-                  backgroundColor: "var(--surface-secondary, #222229)",
+                  backgroundColor: "var(--surface-secondary)",
                   fontSize: 13,
                   "& fieldset": {
-                    borderColor: "var(--border, #303039)",
+                    borderColor: "var(--border)",
                   },
                   "&:hover fieldset, &.Mui-focused fieldset": {
                     borderColor: "var(--accent)",
@@ -402,7 +402,7 @@ title: bug?.title || ("Bug #" + getBugId(bug)),
                     maxWidth: "calc(100vw - 24px)",
                     maxHeight: 440,
                     mt: 1,
-                    backgroundColor: "var(--surface, #17171c)",
+                    backgroundColor: "var(--surface)",
                     color: "var(--text-h)",
                     border: "1px solid var(--border, #303039)",
                     backgroundImage: "none",
@@ -490,6 +490,9 @@ title: bug?.title || ("Bug #" + getBugId(bug)),
                         backgroundColor: unread
                           ? "var(--surface-secondary)"
                           : "transparent",
+                        "&:hover": {
+                          backgroundColor: "var(--accent-bg)",
+                        },
                       }}
                     >
                       {String(notification.severity).toLowerCase() ===
@@ -547,7 +550,11 @@ title: bug?.title || ("Bug #" + getBugId(bug)),
                     setNotificationsAnchor(null);
                     navigate("/bugs");
                   }}
-                  sx={{ textTransform: "none" }}
+                  sx={{
+                    textTransform: "none",
+                    color: "var(--accent)",
+                    "&:hover": { backgroundColor: "var(--accent-bg)" },
+                  }}
                 >
                   View all bugs
                 </Button>
