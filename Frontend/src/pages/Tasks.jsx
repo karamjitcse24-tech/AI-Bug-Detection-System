@@ -55,11 +55,25 @@ const COLORS = {
 const panelSx = {
   p: 2.5,
   borderRadius: 3,
-  bgcolor: "var(--surface, #191a20)",
-  color: "var(--text, #f3f4f6)",
-  border: "1px solid var(--border, #30313b)",
-  boxShadow: "none",
+  bgcolor: "var(--surface, #ffffff)",
+  color: "var(--text, #475569)",
+  border: "1px solid var(--border, #dbe3ee)",
+  boxShadow: "var(--shadow, none)",
   minWidth: 0,
+  transition: "background-color 0.2s ease, color 0.2s ease, border-color 0.2s ease",
+};
+
+const fieldSx = {
+  "& .MuiInputLabel-root": { color: "var(--text)" },
+  "& .MuiInputLabel-root.Mui-focused": { color: "var(--accent)" },
+  "& .MuiOutlinedInput-root": {
+    color: "var(--text-h)",
+    backgroundColor: "var(--surface)",
+    "& fieldset": { borderColor: "var(--border)" },
+    "&:hover fieldset": { borderColor: "var(--accent-border)" },
+    "&.Mui-focused fieldset": { borderColor: "var(--accent)" },
+  },
+  "& .MuiSvgIcon-root": { color: "var(--text)" },
 };
 
 function loadTasks() {
@@ -109,7 +123,7 @@ function SummaryCard({ title, value, icon, color }) {
           <Typography
             variant="h4"
             fontWeight={800}
-            sx={{ mt: 1, color: "var(--text, #f3f4f6)" }}
+            sx={{ mt: 1, color: "var(--text-h)" }}
           >
             {value}
           </Typography>
@@ -300,7 +314,7 @@ export default function Tasks() {
         width: "100%",
         minWidth: 0,
         boxSizing: "border-box",
-        color: "var(--text, #f3f4f6)",
+        color: "var(--text)",
       }}
     >
       <Box
@@ -325,10 +339,10 @@ export default function Tasks() {
           startIcon={<AddRounded />}
           onClick={openCreateDialog}
           sx={{
-            bgcolor: COLORS.cyan,
-            color: "#101820",
+            bgcolor: "var(--accent)",
+            color: "var(--bg)",
             fontWeight: 700,
-            "&:hover": { bgcolor: "#67e8f9" },
+            "&:hover": { filter: "brightness(0.94)", bgcolor: "var(--accent)" },
           }}
         >
           Create Task
@@ -399,6 +413,7 @@ export default function Tasks() {
           }}
         >
           <TextField
+            sx={fieldSx}
             fullWidth
             placeholder="Search by title or description..."
             value={search}
@@ -413,6 +428,8 @@ export default function Tasks() {
           <FormControl fullWidth>
             <InputLabel>Status</InputLabel>
             <Select
+              sx={fieldSx}
+              MenuProps={{ PaperProps: { sx: { bgcolor: "var(--surface)", color: "var(--text)", border: "1px solid var(--border)" } } }}
               value={statusFilter}
               label="Status"
               onChange={(event) => setStatusFilter(event.target.value)}
@@ -429,6 +446,8 @@ export default function Tasks() {
           <FormControl fullWidth>
             <InputLabel>Priority</InputLabel>
             <Select
+              sx={fieldSx}
+              MenuProps={{ PaperProps: { sx: { bgcolor: "var(--surface)", color: "var(--text)", border: "1px solid var(--border)" } } }}
               value={priorityFilter}
               label="Priority"
               onChange={(event) => setPriorityFilter(event.target.value)}
@@ -478,6 +497,7 @@ export default function Tasks() {
               variant="contained"
               startIcon={<AddRounded />}
               onClick={openCreateDialog}
+              sx={{ bgcolor: "var(--accent)", color: "var(--bg)", fontWeight: 700, "&:hover": { bgcolor: "var(--accent)", filter: "brightness(0.94)" } }}
             >
               Create your first task
             </Button>
@@ -526,6 +546,7 @@ export default function Tasks() {
 
                 <Box display="flex" flexShrink={0}>
                   <IconButton
+                    sx={{ color: "var(--text)" }}
                     aria-label="Edit task"
                     title="Edit task"
                     onClick={() => openEditDialog(task)}
@@ -601,6 +622,8 @@ export default function Tasks() {
 
                 <FormControl size="small" sx={{ minWidth: 145 }}>
                   <Select
+                    sx={fieldSx}
+                    MenuProps={{ PaperProps: { sx: { bgcolor: "var(--surface)", color: "var(--text)", border: "1px solid var(--border)" } } }}
                     value={task.status}
                     inputProps={{ "aria-label": "Change task status" }}
                     onChange={(event) =>
@@ -625,6 +648,15 @@ export default function Tasks() {
         onClose={closeDialog}
         fullWidth
         maxWidth="sm"
+        PaperProps={{
+          sx: {
+            bgcolor: "var(--surface)",
+            color: "var(--text)",
+            border: "1px solid var(--border)",
+            borderRadius: 3,
+            backgroundImage: "none",
+          },
+        }}
       >
         <Box component="form" onSubmit={handleSave}>
           <DialogTitle fontWeight={800}>
@@ -639,6 +671,7 @@ export default function Tasks() {
             )}
 
             <TextField
+              sx={{ ...fieldSx, mt: 1, mb: 2 }}
               autoFocus
               required
               fullWidth
@@ -652,10 +685,10 @@ export default function Tasks() {
                 }))
               }
               inputProps={{ maxLength: 150 }}
-              sx={{ mt: 1, mb: 2 }}
             />
 
             <TextField
+              sx={{ ...fieldSx, mb: 2 }}
               fullWidth
               multiline
               minRows={3}
@@ -668,7 +701,6 @@ export default function Tasks() {
                   description: event.target.value,
                 }))
               }
-              sx={{ mb: 2 }}
             />
 
             <Box
@@ -682,6 +714,8 @@ export default function Tasks() {
               <FormControl fullWidth>
                 <InputLabel>Priority</InputLabel>
                 <Select
+                  sx={fieldSx}
+                  MenuProps={{ PaperProps: { sx: { bgcolor: "var(--surface)", color: "var(--text)", border: "1px solid var(--border)" } } }}
                   value={form.priority}
                   label="Priority"
                   onChange={(event) =>
@@ -702,6 +736,8 @@ export default function Tasks() {
               <FormControl fullWidth>
                 <InputLabel>Status</InputLabel>
                 <Select
+                  sx={fieldSx}
+                  MenuProps={{ PaperProps: { sx: { bgcolor: "var(--surface)", color: "var(--text)", border: "1px solid var(--border)" } } }}
                   value={form.status}
                   label="Status"
                   onChange={(event) =>
@@ -721,6 +757,7 @@ export default function Tasks() {
             </Box>
 
             <TextField
+              sx={fieldSx}
               fullWidth
               type="date"
               label="Due date"
@@ -741,7 +778,16 @@ export default function Tasks() {
             <Button onClick={closeDialog} color="inherit">
               Cancel
             </Button>
-            <Button type="submit" variant="contained">
+            <Button
+              type="submit"
+              variant="contained"
+              sx={{
+                bgcolor: "var(--accent)",
+                color: "var(--bg)",
+                fontWeight: 700,
+                "&:hover": { bgcolor: "var(--accent)", filter: "brightness(0.94)" },
+              }}
+            >
               {editingId !== null ? "Save Changes" : "Create Task"}
             </Button>
           </DialogActions>
