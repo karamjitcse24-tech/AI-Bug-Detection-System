@@ -1,3 +1,4 @@
+
 package com.example.backend;
 
 import org.springframework.context.annotation.Bean;
@@ -18,7 +19,8 @@ public class CorsConfig {
 
         config.setAllowedOrigins(Arrays.asList(
                 "http://localhost:5173",
-                "https://ai-bug-detection-system.vercel.app"
+                "https://ai-bug-detection-system.vercel.app",
+                "https://ai-bug-management-system.vercel.app"
         ));
 
         config.setAllowedMethods(Arrays.asList(
@@ -30,7 +32,6 @@ public class CorsConfig {
         ));
 
         config.setAllowedHeaders(Arrays.asList("*"));
-
         config.setAllowCredentials(true);
 
         UrlBasedCorsConfigurationSource source =
